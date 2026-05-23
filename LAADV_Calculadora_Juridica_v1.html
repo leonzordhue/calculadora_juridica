@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.0</title>
+<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
@@ -120,6 +120,9 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
 .rate-cell{font-family:'Courier New',monospace;font-weight:700}
 .rate-pos{color:var(--success)}
 .rate-neg{color:var(--danger)}
+details summary::-webkit-details-marker{display:none}
+details summary::marker{display:none}
+details[open] #trace-arrow{transform:rotate(90deg)}
 .hidden{display:none!important}
 .flex{display:flex;align-items:center;gap:10px}
 .flex-end{display:flex;align-items:center;gap:10px;justify-content:flex-end}
@@ -146,7 +149,7 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
 <div class="header">
   <div>
     <div class="hd-title">LAADV — Plataforma Axiomática</div>
-    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.0</div>
+    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.1</div>
   </div>
   <div class="hd-right">
     <span class="q-chip" id="header-q">Q=—</span>
@@ -160,21 +163,21 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
   <button class="tab-btn" onclick="switchTab('calcular',this)">⚙ Calcular</button>
   <button class="tab-btn" onclick="switchTab('comparativo',this)">⚖ Comparativo</button>
   <button class="tab-btn" onclick="switchTab('relatorio',this)">📄 Relatório</button>
-  <button class="tab-btn" onclick="switchTab('kernel',this)">⚛ Kernel</button>
+  <button class="tab-btn" onclick="switchTab('kernel',this)">📊 Sistema</button>
 </div>
 
 <!-- ═══ TAB EXTRATOS ═══ -->
 <div id="tab-extratos" class="tab-pane active">
   <div class="card">
-    <div class="card-title">📂 Importar Extrato — BradescoParser v2.0</div>
+    <div class="card-title">📂 Importar Documento — Extrato Bradesco ou Histórico INSS</div>
     <div class="upload-zone" id="upload-zone"
          onclick="document.getElementById('pdf-input').click()"
          ondragover="event.preventDefault();this.classList.add('drag-over')"
          ondragleave="this.classList.remove('drag-over')"
          ondrop="handleDrop(event)">
       <div class="upload-icon">📄</div>
-      <div class="upload-text">Arraste o extrato PDF aqui ou clique para selecionar</div>
-      <div class="upload-hint">Bradesco · PDF.js 3.11.174 · Classificação axiomática por keywords · Conf. scoring</div>
+      <div class="upload-text">Arraste o PDF aqui ou clique para selecionar</div>
+      <div class="upload-hint">Suporta: Extrato Bancário Bradesco · Histórico de Créditos INSS · Detecção automática do tipo de documento</div>
       <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="carregarPDF(this.files[0])">
     </div>
     <div id="parse-status" class="status-row hidden">
@@ -214,7 +217,7 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
 <!-- ═══ TAB CALCULAR ═══ -->
 <div id="tab-calcular" class="tab-pane">
   <div class="card">
-    <div class="card-title">⚙ Parâmetros do Cálculo — LegalCPU Pipeline</div>
+    <div class="card-title">⚙ Parâmetros do Cálculo</div>
     <div class="form-row cols-3">
       <div>
         <label>Tipo de Cobrança</label>
@@ -253,6 +256,7 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
           <option value="SELIC">SELIC</option>
           <option value="TJRJ">TJRJ (INPC base)</option>
           <option value="TJAM">TJAM (INPC base)</option>
+          <option value="TJDFT">TJDFT — Distrito Federal (INPC base)</option>
         </select>
       </div>
       <div>
@@ -281,7 +285,7 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
 
   <div id="calc-res" class="hidden">
     <div class="result-box">
-      <div style="font-size:20px;opacity:.85;margin-bottom:4px">Resultado — LegalCPU WRITEBACK</div>
+      <div style="font-size:20px;opacity:.85;margin-bottom:4px">Resultado do Cálculo</div>
       <div class="result-grid">
         <div class="result-item"><div class="result-label">Valor Original</div><div class="result-value" id="r-original">—</div></div>
         <div class="result-item"><div class="result-label">Correção Monetária</div><div class="result-value" id="r-correcao">—</div></div>
@@ -297,8 +301,14 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
       ⚖ Repetição em Dobro — Art. 42 CDC: <span id="r-dobro">—</span>
     </div>
     <div class="card mt16">
-      <div class="card-title">🖥 Pipeline LegalCPU — Trace de Execução</div>
-      <div class="pipeline" id="pipeline-out"></div>
+      <details id="trace-details">
+        <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--teal);padding:2px 0;outline:none">
+          <span id="trace-arrow" style="font-size:13px;transition:transform .2s;display:inline-block">▶</span>
+          🖥 Trace de Execução
+          <span style="font-size:12px;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif">(detalhes técnicos do cálculo)</span>
+        </summary>
+        <div class="pipeline" id="pipeline-out" style="margin-top:14px"></div>
+      </details>
     </div>
     <div class="flex-end mt16">
       <button class="btn btn-outline" onclick="pushToComparativo()">+ Comparativo</button>
@@ -518,7 +528,7 @@ const LIBRARY = Object.freeze({
 
   KEYWORDS: Object.freeze({
     RMC:     ['RMC','RESERVA DE MARGEM','CARTAO CONSIGNADO','CONSIG CART','CRED CONSIG CART','RES MARG CART'],
-    RCC:     ['RCC','RESERVA CARTAO','CART CONSIG','CONSIGNADO CARTAO'],
+    RCC:     ['RCC','RESERVA CARTAO','CART CONSIG','CONSIGNADO CARTAO','CARTAO CONSIG','CONSIG CARTAO','CONSIGNACAO CARTAO','RCC CARTAO','DEB CART CONSIG'],
     BX_FINAN:['BX ANT.FINAN','BX.ANT.FINANC','BAIXA ANTECIPADA','REFINANCIAMENTO','REFI EMP'],
     TARIFA:  ['TARIFA','ANUIDADE','CESTA','PACOTE SERV','EMIS EXTRATO','SAQUE TERM','SAQUE 24H','TAR MANUT'],
     SEGURO:  ['SEGURO','PRESTAMISTA','SEGPREST','SEG PREST','SEG VIDA','SEG CAPIT'],
@@ -532,6 +542,18 @@ const LIBRARY = Object.freeze({
     TAU_0: 1.0,
     LAMBDA: 0.1,
     IC_MIN: 0.9
+  }),
+
+  // Mapeamento de rubricas INSS → categoria (usados pelo INSSParser)
+  INSS_CODES: Object.freeze({
+    '216':'PARCELA',  // Consignação Empréstimo Bancário
+    '217':'RMC',      // Empréstimo sobre a RMC ← principal alvo
+    '218':'OUTROS',   // Varia por documento
+    '221':'SEGURO',   // Seguro Prestamista
+    '222':'SEGURO',   // Seguro de Vida
+    '268':'RCC',      // Consignação - Cartão ← principal alvo
+    '201':'OUTROS',   // IRRF
+    '207':'OUTROS'    // IR 13º Salário
   })
 });
 
@@ -574,7 +596,8 @@ const FinancialEngine = Object.freeze({
   /** Acumula índice entre dataInicio (inclusive) e dataFim com pró-rata */
   acumularIndice(nome, dataInicio, dataFim) {
     // Fallback: TJRJ e TJAM usam INPC como base
-    const nomeReal = (nome==='TJRJ'||nome==='TJAM') ? 'INPC' : nome;
+    // TJRJ, TJAM e TJDFT utilizam INPC como base de correção monetária
+    const nomeReal = (nome==='TJRJ'||nome==='TJAM'||nome==='TJDFT') ? 'INPC' : nome;
     const tbl = LIBRARY.INDICES[nomeReal];
     if (!tbl) return 1.0;
     const ini = new Date(dataInicio+'T00:00:00');
@@ -800,6 +823,164 @@ class BradescoParser {
 
 
 // ══════════════════════════════════════════════════════════════════════
+//  INSSParser — Analisador de Histórico de Créditos INSS · PDF.js 3.11.174
+//  Layout: Código[70-105] | Descrição[140-430] | Valor[450-535]
+//  Competência MM/YYYY[35-145] nas linhas de resumo de pagamento
+//  Classificação prioritária por código rubrica (INSS_CODES), alta confiança
+// ══════════════════════════════════════════════════════════════════════
+class INSSParser {
+  constructor() {
+    this.CFG={
+      xCode:[70, 105],   // código rubrica 3 dígitos (ex: '217', '268', '216')
+      xDesc:[140, 430],  // descrição da rubrica
+      xVal: [450, 535],  // valor R$
+      xComp:[35,  145],  // competência MM/YYYY (linha resumo de pagamento)
+      yGap: 8,           // limiar de agrupamento de itens na mesma linha
+      valMin:0.01, valMax:200000
+    };
+  }
+
+  async parse(file, onProgress) {
+    if (typeof pdfjsLib==='undefined') throw new Error('PDF.js não carregado. Verifique a internet.');
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    const itens=[];
+    let competenciaAtual='';
+    for (let p=1; p<=pdf.numPages; p++) {
+      if(onProgress) onProgress(p, pdf.numPages);
+      const pg=await pdf.getPage(p);
+      const ct=await pg.getTextContent();
+      const rows=this._groupRows(ct.items);
+      for(const r of rows) {
+        const parsed=this._parseRow(r, competenciaAtual);
+        if(parsed.comp) competenciaAtual=parsed.comp;
+        if(parsed.item) itens.push(parsed.item);
+      }
+    }
+    return this._classify(this._dedup(itens));
+  }
+
+  _groupRows(items) {
+    // Ordena por Y decrescente (topo da página primeiro) e depois X crescente
+    const sorted=[...items].sort((a,b)=>{
+      const dy=Math.abs(b.transform[5]-a.transform[5]);
+      return dy>this.CFG.yGap ? b.transform[5]-a.transform[5] : a.transform[4]-b.transform[4];
+    });
+    const rows=[]; let cur=null;
+    for(const it of sorted) {
+      const y=it.transform[5], x=it.transform[4];
+      if(!cur||Math.abs(y-cur.y)>this.CFG.yGap){cur={y,items:[]};rows.push(cur);}
+      cur.items.push({x, txt:it.str.trim()});
+    }
+    return rows;
+  }
+
+  _parseRow(row, competenciaAtual) {
+    const c=this.CFG;
+    let code='', desc='', valTxt='', compTxt='';
+    for(const it of row.items) {
+      if(!it.txt) continue;
+      const x=it.x;
+      // Código rubrica: 3 dígitos exatos na coluna de código
+      if(x>=c.xCode[0]&&x<=c.xCode[1] && /^\d{3}$/.test(it.txt)) {
+        code=it.txt;
+      }
+      // Descrição
+      if(x>=c.xDesc[0]&&x<=c.xDesc[1]) {
+        desc+=(desc?' ':'')+it.txt;
+      }
+      // Valor monetário
+      if(x>=c.xVal[0]&&x<=c.xVal[1]) {
+        if(it.txt.includes('R$')||(/[\d,]/.test(it.txt)&&it.txt.length>2)) valTxt=it.txt;
+      }
+      // Competência MM/YYYY — linha de resumo de pagamento
+      if(x>=c.xComp[0]&&x<=c.xComp[1] && /^\d{2}\/\d{4}$/.test(it.txt)) {
+        compTxt=it.txt;
+      }
+    }
+    // Linha de competência (sem código rubrica)
+    if(compTxt && !code) return {comp:compTxt, item:null};
+    // Linha de rubrica com código + descrição
+    if(code && desc) {
+      const valor=this._pv(valTxt);
+      if(valor===null||valor<c.valMin||valor>c.valMax) return {comp:null, item:null};
+      const dataStr=competenciaAtual ? this._compToDate(competenciaAtual) : new Date().toISOString().slice(0,10);
+      return {comp:null, item:{data:dataStr, desc:desc.trim(), tipo:'D', valor, _code:code, competencia:competenciaAtual}};
+    }
+    return {comp:null, item:null};
+  }
+
+  _compToDate(comp) {
+    // MM/YYYY → YYYY-MM-01
+    const p=comp.split('/');
+    if(p.length!==2) return comp;
+    return `${p[1]}-${p[0].padStart(2,'0')}-01`;
+  }
+
+  _pv(txt) {
+    if(!txt) return null;
+    const v=parseFloat(txt.replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.'));
+    return isNaN(v) ? null : Math.abs(v);
+  }
+
+  _dedup(itens) {
+    const s=new Set();
+    return itens.filter(it=>{
+      const k=`${it.data}|${it._code}|${it.desc}|${it.valor}`;
+      if(s.has(k))return false; s.add(k); return true;
+    });
+  }
+
+  _classify(itens) {
+    return itens.map(it=>{
+      let cat='OUTROS', conf=0.5;
+      // Prioridade 1: código rubrica INSS → alta confiança (0.95)
+      if(it._code && LIBRARY.INSS_CODES[it._code]) {
+        cat=LIBRARY.INSS_CODES[it._code];
+        conf=0.95;
+      } else {
+        // Prioridade 2: keywords (fallback)
+        const up=it.desc.toUpperCase();
+        for(const[c,kws] of Object.entries(LIBRARY.KEYWORDS)){
+          for(const kw of kws){ if(up.includes(kw)){cat=c;conf=0.75;break;} }
+          if(cat!=='OUTROS')break;
+        }
+      }
+      return {...it, categoria:cat, confidence:+conf.toFixed(2)};
+    });
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+//  detectarTipo — Identifica tipo de documento PDF: 'INSS' ou 'BRADESCO'
+//  Lê a primeira página e busca marcadores textuais do INSS
+// ══════════════════════════════════════════════════════════════════════
+async function detectarTipo(file) {
+  if(typeof pdfjsLib==='undefined') return 'BRADESCO';
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    const pg=await pdf.getPage(1);
+    const ct=await pg.getTextContent();
+    const texto=ct.items.map(i=>i.str).join(' ').toUpperCase();
+    if(texto.includes('INSTITUTO NACIONAL DO SEGURO SOCIAL') ||
+       texto.includes('HISTORICO DE CREDITOS') ||
+       texto.includes('HISTÓRICO DE CRÉDITOS') ||
+       (texto.includes('COMPETENCIA') && texto.includes('NIT')) ||
+       texto.includes('NIT:')) {
+      return 'INSS';
+    }
+    return 'BRADESCO';
+  } catch(e) {
+    return 'BRADESCO';
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
 //  ReportBuilder — Gerador de Memória de Cálculo
 // ══════════════════════════════════════════════════════════════════════
 const ReportBuilder = {
@@ -824,7 +1005,8 @@ const ReportBuilder = {
       <strong>Lei 14.905/2024</strong> — correção INPC + mora 1% a.m. (pré-30/08/2024) e IPCA + mora SELIC (pós-30/08/2024).<br>
       <strong>Art. 42, §único, CDC</strong> — repetição em dobro para cobranças indevidas de RMC/RCC.<br>
       <strong>Art. 406, CC</strong> — mora de 1% a.m. para períodos anteriores à Lei 14.905/24.<br>
-      Índices: IBGE (IPCA, INPC), FGV (IGP-M), Banco Central do Brasil (SELIC).
+      Índices: IBGE (IPCA, INPC), FGV (IGP-M), Banco Central do Brasil (SELIC).<br>
+      <strong>TJDFT/TJRJ/TJAM</strong> — utilizam INPC como base de correção monetária.
     </div>
     <h3>2. Detalhamento das Cobranças</h3>`;
 
@@ -852,7 +1034,7 @@ const ReportBuilder = {
     });
 
     html+=`<div class="mc-total">TOTAL GERAL ATUALIZADO: ${FinancialEngine.fmt(total)} | ${this._items.length} cobrança(s)</div>
-    <div class="mc-fundamento" style="font-size:11px;margin-top:6px">LAADV Plataforma Axiomática v1.0 · AKE/UFT-1.0 · ${now}</div>`;
+    <div class="mc-fundamento" style="font-size:11px;margin-top:6px">LAADV Plataforma Axiomática v1.1 · AKE/UFT-1.0 · ${now}</div>`;
     return html;
   },
 
@@ -909,14 +1091,18 @@ async function carregarPDF(file) {
   prog.classList.remove('hidden');
   try {
     kernel.registrarBuild('PARSE',`Arquivo: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
-    const parser=new BradescoParser();
+    msg.textContent='Detectando tipo de documento...';
+    const tipoPDF=await detectarTipo(file);
+    kernel.registrarBuild('PARSE',`Tipo detectado: ${tipoPDF}`);
+    msg.textContent=`Parser ${tipoPDF} iniciado...`;
+    const parser = tipoPDF==='INSS' ? new INSSParser() : new BradescoParser();
     const txns=await parser.parse(file,(p,t)=>{
-      msg.textContent=`Processando página ${p} de ${t}...`;
+      msg.textContent=`[${tipoPDF}] Processando página ${p} de ${t}...`;
       fill.style.width=`${Math.round(p/t*100)}%`;
     });
     dot.classList.remove('pulse');
-    msg.textContent=`✓ ${txns.length} transações encontradas em "${file.name}"`;
-    kernel.registrarBuild('PARSE',`${txns.length} transações classificadas`);
+    msg.textContent=`✓ ${txns.length} transação(ões) encontrada(s) em "${file.name}" · ${tipoPDF}`;
+    kernel.registrarBuild('PARSE',`${txns.length} itens classificados · Parser: ${tipoPDF}`);
     renderTransacoes(txns);
   } catch(err) {
     dot.classList.add('error');
@@ -1000,6 +1186,9 @@ function executarCalculo(){
     else db.classList.add('hidden');
     document.getElementById('pipeline-out').innerHTML=cpu.renderTrace();
     document.getElementById('calc-res').classList.remove('hidden');
+    // Abre automaticamente o painel de trace técnico
+    const traceDetails=document.getElementById('trace-details');
+    if(traceDetails){ traceDetails.open=false; } // fecha para não poluir, usuário abre se quiser
     // Popula comparativo automaticamente
     document.getElementById('laadv-principal').value=valor.toFixed(2);
     document.getElementById('laadv-correcao').value=corrVal.toFixed(2);
@@ -1110,7 +1299,7 @@ function exportarPDF(){
   doc.text(`Cliente: ${document.getElementById('rel-cliente').value||'—'}`,20,36);
   doc.text(`Data Base: ${document.getElementById('rel-database').value||new Date().toLocaleDateString('pt-BR')}`,20,42);
   doc.setFontSize(8);doc.setTextColor(150);
-  doc.text('AKE/UFT-1.0 · LAADV Plataforma Axiomática v1.0',20,48);
+  doc.text('AKE/UFT-1.0 · LAADV Plataforma Axiomática v1.1',20,48);
   const rows=ReportBuilder.buildXLSXData();
   if(rows.length>1){
     doc.autoTable({startY:56,head:[rows[0]],body:rows.slice(1),
@@ -1211,10 +1400,11 @@ const kernel=new AKEKernel();
   const hoje=new Date().toISOString().split('T')[0];
   document.getElementById('c-fim').value=hoje;
   document.getElementById('rel-database').value=hoje;
-  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.0');
+  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.1');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
-  kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC`);
-  kernel.registrarBuild('LAW','Lei 14.905/24: split automático 30/08/2024 ativo');
+  kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
+  kernel.registrarBuild('PARSER','BradescoParser + INSSParser · detectarTipo() automático');
+  kernel.registrarBuild('LAW','Lei 14.905/24: split automático 30/08/2024 ativo · TJDFT habilitado');
   kernel.registrarBuild('STATUS','Sistema operacional · Aguardando operação');
   updateKernelMetrics();
 })();
