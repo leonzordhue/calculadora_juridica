@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.1</title>
+<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
@@ -149,7 +149,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 <div class="header">
   <div>
     <div class="hd-title">LAADV — Plataforma Axiomática</div>
-    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.1</div>
+    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.2</div>
   </div>
   <div class="hd-right">
     <span class="q-chip" id="header-q">Q=—</span>
@@ -206,8 +206,14 @@ details[open] #trace-arrow{transform:rotate(90deg)}
           <tbody id="txn-body"></tbody>
         </table>
       </div>
+      <div id="rmc-rcc-total" class="hidden" style="background:var(--gray-bg);border-radius:8px;padding:10px 16px;margin-top:12px;font-size:13px">
+        <span style="color:var(--muted)">Total RMC+RCC selecionados:</span>
+        <strong id="rmc-rcc-valor" style="color:var(--teal);margin-left:8px">R$ 0,00</strong>
+        <span id="rmc-rcc-qtd" style="color:var(--muted);margin-left:6px"></span>
+      </div>
       <div class="flex-end mt16">
         <button class="btn btn-outline" onclick="toggleSelAll()">Sel. Tudo</button>
+        <button class="btn btn-outline" onclick="enviarParaTaxaMedia()" title="Soma RMC/RCC e abre análise de consignado">💰 Analisar Consignado</button>
         <button class="btn btn-primary" onclick="enviarParaCalcular()">Enviar para Calcular →</button>
       </div>
     </div>
@@ -257,6 +263,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
           <option value="TJRJ">TJRJ (INPC base)</option>
           <option value="TJAM">TJAM (INPC base)</option>
           <option value="TJDFT">TJDFT — Distrito Federal (INPC base)</option>
+          <option value="IPCA_E">IPCA-E — STJ / Obrigações Civis (RJ)</option>
         </select>
       </div>
       <div>
@@ -313,6 +320,93 @@ details[open] #trace-arrow{transform:rotate(90deg)}
     <div class="flex-end mt16">
       <button class="btn btn-outline" onclick="pushToComparativo()">+ Comparativo</button>
       <button class="btn btn-gold" onclick="pushToRelatorio()">📄 Adicionar ao Relatório</button>
+    </div>
+  </div>
+
+  <!-- ═══ CARD TAXA MÉDIA BACEN ═══ -->
+  <div class="card mt16" id="card-taxamedia">
+    <div class="card-title">💰 Conversão Consignado — Taxa Média BACEN</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">
+      Some as cobranças RMC/RCC, informe o período e busque a taxa média de mercado do BACEN.
+      O sistema calcula o que deveria ser cobrado num empréstimo consignado correto (fórmula Price — mesma da Calculadora do Cidadão).
+    </p>
+    <div class="form-row cols-3">
+      <div>
+        <label>Tipo de Vínculo do Cliente</label>
+        <select id="tm-tipo">
+          <option value="INSS">Beneficiário INSS (aposentado/pensionista)</option>
+          <option value="PUBLICO">Servidor Público</option>
+          <option value="PRIVADO">Empregado Setor Privado (CLT)</option>
+        </select>
+      </div>
+      <div>
+        <label>Data do Primeiro Desconto</label>
+        <input type="date" id="tm-inicio">
+      </div>
+      <div>
+        <label>Data do Último Desconto</label>
+        <input type="date" id="tm-fim">
+      </div>
+    </div>
+    <div class="form-row cols-3">
+      <div>
+        <label>Total Descontado RMC/RCC (R$)</label>
+        <input type="number" id="tm-total" step="0.01" min="0.01" placeholder="0,00">
+      </div>
+      <div>
+        <label>Número de Parcelas (meses)</label>
+        <input type="number" id="tm-parcelas" step="1" min="1" placeholder="calculado automaticamente">
+      </div>
+      <div>
+        <label>Taxa Média a.m. (% — auto ou manual)</label>
+        <input type="number" id="tm-taxa-manual" step="0.0001" min="0.01" placeholder="Ex: 1.8100">
+        <div id="tm-taxa-info" style="font-size:10px;color:var(--muted);margin-top:3px"></div>
+      </div>
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-outline" onclick="abrirBACEN()">🔗 Abrir BACEN</button>
+      <button class="btn btn-primary" onclick="buscarTaxaMedia()">📡 Buscar Taxa Média BACEN</button>
+      <button class="btn btn-gold" onclick="calcularConsignado()">▶ Calcular Conversão</button>
+    </div>
+
+    <div id="tm-resultado" class="hidden">
+      <div class="result-box mt16">
+        <div style="font-size:18px;opacity:.85;margin-bottom:14px">Análise Comparativa — Consignado (Fórmula Price)</div>
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">Total Descontado (Real)</div>
+            <div class="result-value" id="tm-r-descontado" style="color:#FF6B6B">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Valor Correto (Taxa Média)</div>
+            <div class="result-value" id="tm-r-correto" style="color:#80FFDB">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Excesso Cobrado</div>
+            <div class="result-value" id="tm-r-excesso" style="color:var(--gold-light)">—</div>
+          </div>
+        </div>
+        <div class="result-grid" style="margin-top:10px">
+          <div class="result-item">
+            <div class="result-label">Prestação Justa (PMT)</div>
+            <div class="result-value" id="tm-r-pmt" style="font-size:15px">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Taxa Média Utilizada</div>
+            <div class="result-value" id="tm-r-taxa" style="font-size:15px">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Período / N Parcelas</div>
+            <div class="result-value" id="tm-r-periodo" style="font-size:14px">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="dobro-banner mt8" id="tm-r-dobro-banner">
+        ⚖ Devolução em Dobro — Art. 42 CDC: <span id="tm-r-dobro">—</span>
+      </div>
+      <div class="flex-end mt16">
+        <button class="btn btn-gold" onclick="pushConsignadoRelatorio()">📄 Adicionar ao Relatório</button>
+      </div>
     </div>
   </div>
 </div>
@@ -523,6 +617,25 @@ const LIBRARY = Object.freeze({
       '2024-01':0.97,'2024-02':0.80,'2024-03':0.83,'2024-04':0.89,'2024-05':0.83,'2024-06':0.89,
       '2024-07':0.89,'2024-08':1.02,'2024-09':0.89,'2024-10':0.96,'2024-11':0.77,'2024-12':0.93,
       '2025-01':1.16,'2025-02':1.00,'2025-03':1.17,'2025-04':1.13
+    }),
+
+    // IPCA-E — IBGE · SGS 10764 · Usado pelo STJ e TJRJ (obrigações civis/contratos)
+    IPCA_E: Object.freeze({
+      '2018-01':0.39,'2018-02':0.38,'2018-03':0.10,'2018-04':0.21,'2018-05':0.14,'2018-06':1.11,
+      '2018-07':0.64,'2018-08':0.13,'2018-09':0.09,'2018-10':0.58,'2018-11':0.19,'2018-12':-0.16,
+      '2019-01':0.30,'2019-02':0.34,'2019-03':0.54,'2019-04':0.72,'2019-05':0.35,'2019-06':0.06,
+      '2019-07':0.09,'2019-08':0.08,'2019-09':0.09,'2019-10':0.09,'2019-11':0.14,'2019-12':1.05,
+      '2020-01':0.71,'2020-02':0.22,'2020-03':0.02,'2020-04':-0.01,'2020-05':-0.59,'2020-06':0.02,
+      '2020-07':0.30,'2020-08':0.23,'2020-09':0.45,'2020-10':0.94,'2020-11':0.81,'2020-12':1.06,
+      '2021-01':0.78,'2021-02':0.48,'2021-03':0.93,'2021-04':0.60,'2021-05':0.44,'2021-06':0.83,
+      '2021-07':0.72,'2021-08':0.89,'2021-09':1.14,'2021-10':1.20,'2021-11':1.17,'2021-12':0.78,
+      '2022-01':0.58,'2022-02':0.99,'2022-03':0.95,'2022-04':1.73,'2022-05':0.59,'2022-06':0.69,
+      '2022-07':0.13,'2022-08':-0.73,'2022-09':-0.37,'2022-10':0.16,'2022-11':0.53,'2022-12':0.52,
+      '2023-01':0.55,'2023-02':0.76,'2023-03':0.69,'2023-04':0.57,'2023-05':0.51,'2023-06':0.04,
+      '2023-07':-0.07,'2023-08':0.28,'2023-09':0.35,'2023-10':0.21,'2023-11':0.33,'2023-12':0.40,
+      '2024-01':0.31,'2024-02':0.78,'2024-03':0.36,'2024-04':0.21,'2024-05':0.44,'2024-06':0.39,
+      '2024-07':0.30,'2024-08':0.19,'2024-09':0.13,'2024-10':0.54,'2024-11':0.62,'2024-12':0.34,
+      '2025-01':0.11,'2025-02':1.23,'2025-03':0.64,'2025-04':0.43
     })
   }),
 
@@ -542,6 +655,13 @@ const LIBRARY = Object.freeze({
     TAU_0: 1.0,
     LAMBDA: 0.1,
     IC_MIN: 0.9
+  }),
+
+  // Configurações SGS/BACEN para taxas de crédito consignado (CORS habilitado)
+  BACEN_SGS: Object.freeze({
+    INSS:    Object.freeze({ sgsCodigo:25468, modalidade:402101, label:'Consignado INSS (Beneficiário/Aposentado)' }),
+    PUBLICO: Object.freeze({ sgsCodigo:25469, modalidade:402201, label:'Consignado Público (Servidor)' }),
+    PRIVADO: Object.freeze({ sgsCodigo:25470, modalidade:402301, label:'Consignado Privado (CLT/Empregado)' })
   }),
 
   // Mapeamento de rubricas INSS → categoria (usados pelo INSSParser)
@@ -1034,7 +1154,7 @@ const ReportBuilder = {
     });
 
     html+=`<div class="mc-total">TOTAL GERAL ATUALIZADO: ${FinancialEngine.fmt(total)} | ${this._items.length} cobrança(s)</div>
-    <div class="mc-fundamento" style="font-size:11px;margin-top:6px">LAADV Plataforma Axiomática v1.1 · AKE/UFT-1.0 · ${now}</div>`;
+    <div class="mc-fundamento" style="font-size:11px;margin-top:6px">LAADV Plataforma Axiomática v1.2 · AKE/UFT-1.0 · ${now}</div>`;
     return html;
   },
 
@@ -1055,7 +1175,7 @@ const ReportBuilder = {
 // ══════════════════════════════════════════════════════════════════════
 //  UIState
 // ══════════════════════════════════════════════════════════════════════
-const UIState={lastWB:null,lastValorBase:0,lastDataInicio:'',lastDataFim:'',lastTipo:'',comparativos:[],selAll:false};
+const UIState={lastWB:null,lastValorBase:0,lastDataInicio:'',lastDataFim:'',lastTipo:'',comparativos:[],selAll:false,lastConsignado:null};
 
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1134,11 +1254,15 @@ function renderTransacoes(txns) {
   }).join('');
   body._txns=txns;
   results.classList.remove('hidden');
+  // Atualiza totalizador RMC/RCC em tempo real
+  body.addEventListener('change',atualizarTotalRMCRCC,{once:false});
+  atualizarTotalRMCRCC();
 }
 
 function toggleSelAll(){
   UIState.selAll=!UIState.selAll;
   document.querySelectorAll('.txn-cb').forEach(cb=>cb.checked=UIState.selAll);
+  atualizarTotalRMCRCC();
 }
 
 function enviarParaCalcular(){
@@ -1154,6 +1278,165 @@ function enviarParaCalcular(){
   if(['RMC','RCC'].includes(t.categoria))document.getElementById('c-dobro').checked=true;
   switchTab('calcular',document.querySelectorAll('.tab-btn')[1]);
   kernel.registrarBuild('IMPORT',`${sel.length} transação(ões) → calcular`);
+}
+
+// ─── TAXA MÉDIA BACEN ───
+
+/** Calcula meses entre duas datas YYYY-MM-DD */
+function monthsBetween(d1, d2) {
+  const a=new Date(d1+'T00:00:00'), b=new Date(d2+'T00:00:00');
+  return Math.max(1,(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth()));
+}
+
+/** Abre o relatório BACEN Histórico de Taxas de Juros para a modalidade selecionada */
+function abrirBACEN() {
+  const tipo=document.getElementById('tm-tipo').value;
+  const ini=document.getElementById('tm-inicio').value;
+  const cfg=LIBRARY.BACEN_SGS[tipo];
+  const periodo=ini||new Date().toISOString().slice(0,10);
+  const url=`https://www.bcb.gov.br/estatisticas/reporttxjuroshistorico?codigoSegmento=1&codigoModalidade=${cfg.modalidade}&InicioPeriodo=${periodo}`;
+  window.open(url,'_blank');
+  kernel.registrarBuild('BACEN',`Abrir: ${cfg.label} a partir de ${periodo}`);
+}
+
+/** Busca taxa média mensal via BACEN SGS API (CORS habilitado) */
+async function buscarTaxaMedia() {
+  const tipo=document.getElementById('tm-tipo').value;
+  const ini=document.getElementById('tm-inicio').value;
+  const fim=document.getElementById('tm-fim').value||new Date().toISOString().slice(0,10);
+  if(!ini){alert('Informe a data do primeiro desconto.');return;}
+  const cfg=LIBRARY.BACEN_SGS[tipo];
+  // SGS espera DD/MM/YYYY
+  const iniSGS=ini.split('-').reverse().join('/');
+  const fimSGS=fim.split('-').reverse().join('/');
+  const url=`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${cfg.sgsCodigo}/dados?formato=json&dataInicial=${iniSGS}&dataFinal=${fimSGS}`;
+  const infoEl=document.getElementById('tm-taxa-info');
+  infoEl.textContent='Consultando BACEN...';
+  try {
+    kernel.registrarBuild('BACEN',`SGS ${cfg.sgsCodigo} · ${iniSGS} → ${fimSGS}`);
+    const resp=await fetch(url);
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const dados=await resp.json();
+    if(!dados.length) throw new Error('Sem dados para o período');
+    const media=dados.reduce((s,d)=>s+parseFloat(d.valor),0)/dados.length;
+    // Preenche o campo de taxa (editável)
+    document.getElementById('tm-taxa-manual').value=media.toFixed(4);
+    infoEl.textContent=`Média de ${dados.length} mês(es) · BACEN SGS ${cfg.sgsCodigo} · ${cfg.label}`;
+    // Calcula N parcelas automaticamente
+    const n=monthsBetween(ini,fim);
+    document.getElementById('tm-parcelas').value=n;
+    kernel.registrarBuild('BACEN',`Taxa média: ${media.toFixed(4)}% a.m. (${dados.length} obs.)`);
+  } catch(err) {
+    infoEl.textContent='';
+    alert('Não foi possível buscar o BACEN automaticamente: '+err.message+'\n\nDigite a taxa manualmente no campo acima (verifique no site BACEN com o botão "Abrir BACEN").');
+    kernel.registrarBuild('BACEN_ERR',err.message);
+  }
+}
+
+/** Fórmula Price (PMT) — mesma da Calculadora do Cidadão BACEN */
+function calcPMT(pv, iMensal, n) {
+  if(iMensal===0) return pv/n;
+  return pv*iMensal/( 1-Math.pow(1+iMensal,-n) );
+}
+
+/** Calcula conversão consignado e exibe resultado comparativo */
+function calcularConsignado() {
+  const total=parseFloat(document.getElementById('tm-total').value);
+  const n=parseInt(document.getElementById('tm-parcelas').value);
+  const taxaPct=parseFloat(document.getElementById('tm-taxa-manual').value);
+  const ini=document.getElementById('tm-inicio').value;
+  const fim=document.getElementById('tm-fim').value||new Date().toISOString().slice(0,10);
+  const tipo=document.getElementById('tm-tipo').value;
+  if(!total||!n||!taxaPct){alert('Preencha: total descontado, nº de parcelas e taxa média.');return;}
+  const i=taxaPct/100;
+  const pmt=calcPMT(total,i,n);           // prestação que deveria ser cobrada
+  const totalCorreto=pmt*n;               // total ao longo do período
+  const excesso=Math.max(0,total-totalCorreto);
+  const dobro=excesso*2;
+  document.getElementById('tm-r-descontado').textContent=FinancialEngine.fmt(total);
+  document.getElementById('tm-r-correto').textContent=FinancialEngine.fmt(totalCorreto);
+  document.getElementById('tm-r-excesso').textContent=FinancialEngine.fmt(excesso);
+  document.getElementById('tm-r-pmt').textContent=FinancialEngine.fmt(pmt)+'/mês';
+  document.getElementById('tm-r-taxa').textContent=taxaPct.toFixed(4)+'% a.m.';
+  document.getElementById('tm-r-periodo').textContent=`${n} parcelas · ${ini} → ${fim}`;
+  const dbanner=document.getElementById('tm-r-dobro-banner');
+  if(excesso>0.01){
+    document.getElementById('tm-r-dobro').textContent=FinancialEngine.fmt(dobro);
+    dbanner.classList.remove('hidden');
+  } else {
+    dbanner.classList.add('hidden');
+  }
+  document.getElementById('tm-resultado').classList.remove('hidden');
+  UIState.lastConsignado={total,n,taxa:taxaPct,pmt,totalCorreto,excesso,dobro,ini,fim,tipo};
+  kernel.registrarSucesso(`CONSIG:${FinancialEngine.fmt(total)}→PMT=${FinancialEngine.fmt(pmt)},excesso=${FinancialEngine.fmt(excesso)}`);
+}
+
+/** Envia dados do consignado para o relatório */
+function pushConsignadoRelatorio() {
+  if(!UIState.lastConsignado){alert('Execute o cálculo de consignado primeiro.');return;}
+  const c=UIState.lastConsignado;
+  const cfg=LIBRARY.BACEN_SGS[c.tipo];
+  ReportBuilder.add({
+    wb:{
+      acc:c.dobro>0?c.dobro:c.excesso,
+      cr:1.0,mr:0,
+      law:'Conversão Consignado — Fórmula Price (BACEN)',
+      idx:`SGS ${cfg.sgsCodigo} · ${cfg.label}`,
+      cat:'TAXA_MEDIA',ic:1.0,
+      result:{dobro:c.dobro>0,valorCorrigido:c.excesso,periodos:[
+        {regime:'CONSIGNADO',idx:`${c.taxa.toFixed(4)}% a.m.`,de:c.ini,ate:c.fim,fator:1,mora:0}
+      ]}
+    },
+    tipo:'Taxa Média Consignado ('+cfg.label+')',
+    valorBase:c.total,
+    dataInicio:c.ini,
+    dataFim:c.fim
+  });
+  alert(`✓ Adicionado ao relatório! Total: ${ReportBuilder.count()} item(s).`);
+  kernel.registrarBuild('RELATORIO',`Consignado: total=${FinancialEngine.fmt(c.total)}, excesso=${FinancialEngine.fmt(c.excesso)}`);
+}
+
+/** Preenche automaticamente o módulo Taxa Média a partir das transações RMC/RCC selecionadas */
+function enviarParaTaxaMedia() {
+  const body=document.getElementById('txn-body');
+  const txns=body._txns||[];
+  const sel=[];
+  document.querySelectorAll('.txn-cb:checked').forEach(cb=>{
+    const t=txns[parseInt(cb.dataset.idx)];
+    if(t&&['RMC','RCC'].includes(t.categoria)&&t.tipo==='D') sel.push(t);
+  });
+  if(!sel.length){alert('Selecione ao menos uma transação RMC ou RCC (débito) para analisar.');return;}
+  const totalVal=sel.reduce((s,t)=>s+t.valor,0);
+  const datas=sel.map(t=>t.data).sort();
+  const primeiraData=datas[0];
+  const ultimaData=datas[datas.length-1];
+  const nMeses=monthsBetween(primeiraData,ultimaData)||1;
+  document.getElementById('tm-total').value=totalVal.toFixed(2);
+  document.getElementById('tm-inicio').value=primeiraData;
+  document.getElementById('tm-fim').value=ultimaData;
+  document.getElementById('tm-parcelas').value=nMeses;
+  switchTab('calcular',document.querySelectorAll('.tab-btn')[1]);
+  setTimeout(()=>document.getElementById('card-taxamedia').scrollIntoView({behavior:'smooth'}),200);
+  kernel.registrarBuild('TAXA_MEDIA',`${sel.length} transações · ${FinancialEngine.fmt(totalVal)} · ${primeiraData} → ${ultimaData}`);
+}
+
+/** Atualiza totalizador RMC+RCC selecionados na aba Extratos */
+function atualizarTotalRMCRCC() {
+  const body=document.getElementById('txn-body');
+  const txns=body._txns||[];
+  let total=0,qtd=0;
+  document.querySelectorAll('.txn-cb:checked').forEach(cb=>{
+    const t=txns[parseInt(cb.dataset.idx)];
+    if(t&&['RMC','RCC'].includes(t.categoria)&&t.tipo==='D'){total+=t.valor;qtd++;}
+  });
+  const wrap=document.getElementById('rmc-rcc-total');
+  if(qtd>0){
+    document.getElementById('rmc-rcc-valor').textContent=FinancialEngine.fmt(total);
+    document.getElementById('rmc-rcc-qtd').textContent=`(${qtd} item${qtd>1?'s':''})`;
+    wrap.classList.remove('hidden');
+  } else {
+    wrap.classList.add('hidden');
+  }
 }
 
 // ─── CALCULAR ───
@@ -1299,7 +1582,7 @@ function exportarPDF(){
   doc.text(`Cliente: ${document.getElementById('rel-cliente').value||'—'}`,20,36);
   doc.text(`Data Base: ${document.getElementById('rel-database').value||new Date().toLocaleDateString('pt-BR')}`,20,42);
   doc.setFontSize(8);doc.setTextColor(150);
-  doc.text('AKE/UFT-1.0 · LAADV Plataforma Axiomática v1.1',20,48);
+  doc.text('AKE/UFT-1.0 · LAADV Plataforma Axiomática v1.2',20,48);
   const rows=ReportBuilder.buildXLSXData();
   if(rows.length>1){
     doc.autoTable({startY:56,head:[rows[0]],body:rows.slice(1),
@@ -1400,11 +1683,12 @@ const kernel=new AKEKernel();
   const hoje=new Date().toISOString().split('T')[0];
   document.getElementById('c-fim').value=hoje;
   document.getElementById('rel-database').value=hoje;
-  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.1');
+  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.2');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
   kernel.registrarBuild('PARSER','BradescoParser + INSSParser · detectarTipo() automático');
-  kernel.registrarBuild('LAW','Lei 14.905/24: split automático 30/08/2024 ativo · TJDFT habilitado');
+  kernel.registrarBuild('LAW','Lei 14.905/24: split automático 30/08/2024 ativo · TJDFT/IPCA-E habilitados');
+  kernel.registrarBuild('BACEN',`SGS ${LIBRARY.BACEN_SGS.INSS.sgsCodigo}(INSS) / ${LIBRARY.BACEN_SGS.PUBLICO.sgsCodigo}(Público) / ${LIBRARY.BACEN_SGS.PRIVADO.sgsCodigo}(Privado) · CORS habilitado`);
   kernel.registrarBuild('STATUS','Sistema operacional · Aguardando operação');
   updateKernelMetrics();
 })();
