@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.2</title>
+<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
@@ -149,7 +149,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 <div class="header">
   <div>
     <div class="hd-title">LAADV — Plataforma Axiomática</div>
-    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.2</div>
+    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.3</div>
   </div>
   <div class="hd-right">
     <span class="q-chip" id="header-q">Q=—</span>
@@ -207,13 +207,16 @@ details[open] #trace-arrow{transform:rotate(90deg)}
         </table>
       </div>
       <div id="rmc-rcc-total" class="hidden" style="background:var(--gray-bg);border-radius:8px;padding:10px 16px;margin-top:12px;font-size:13px">
-        <span style="color:var(--muted)">Total RMC+RCC selecionados:</span>
-        <strong id="rmc-rcc-valor" style="color:var(--teal);margin-left:8px">R$ 0,00</strong>
-        <span id="rmc-rcc-qtd" style="color:var(--muted);margin-left:6px"></span>
+        <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+          <div id="rmc-bloco"><span class="tag tag-rmc" style="margin-right:6px">RMC</span><strong id="rmc-total-valor" style="color:var(--teal)">—</strong><span id="rmc-total-qtd" style="color:var(--muted);font-size:11px;margin-left:4px"></span></div>
+          <div id="rcc-bloco"><span class="tag tag-rmc" style="margin-right:6px">RCC</span><strong id="rcc-total-valor" style="color:var(--teal)">—</strong><span id="rcc-total-qtd" style="color:var(--muted);font-size:11px;margin-left:4px"></span></div>
+          <div style="border-left:2px solid var(--border);padding-left:16px"><span style="color:var(--muted)">Total selecionados:</span><strong id="rmc-rcc-valor" style="color:var(--teal);margin:0 6px">—</strong><span id="rmc-rcc-qtd" style="color:var(--muted);font-size:11px"></span></div>
+        </div>
       </div>
       <div class="flex-end mt16">
         <button class="btn btn-outline" onclick="toggleSelAll()">Sel. Tudo</button>
         <button class="btn btn-outline" onclick="enviarParaTaxaMedia()" title="Soma RMC/RCC e abre análise de consignado">💰 Analisar Consignado</button>
+        <button class="btn btn-outline" onclick="enviarParaLote()" title="Calcula cada parcela individualmente com correção e mora">📊 Calcular em Lote</button>
         <button class="btn btn-primary" onclick="enviarParaCalcular()">Enviar para Calcular →</button>
       </div>
     </div>
@@ -271,7 +274,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
         <select id="c-mora">
           <option value="AUTO_14905">🔀 Automático — Lei 14.905/24</option>
           <option value="1PCT">1% a.m. Simples (Art. 406 CC)</option>
-          <option value="SELIC_MORA">SELIC (pós-14.905/24)</option>
+          <option value="SELIC_MORA">SELIC mora + IPCA correção (Lei 14.905/24)</option>
           <option value="NENHUM">Sem juros de mora</option>
         </select>
       </div>
@@ -301,7 +304,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       <div class="result-grid" style="margin-top:10px">
         <div class="result-item"><div class="result-label">Fator Acumulado</div><div class="result-value" id="r-fator" style="font-size:16px">—</div></div>
         <div class="result-item"><div class="result-label">Regime Legal</div><div class="result-value" id="r-regime" style="font-size:14px">—</div></div>
-        <div class="result-item"><div class="result-label">SUBTOTAL</div><div class="result-value" id="r-subtotal">—</div></div>
+        <div class="result-item"><div id="r-subtotal-label" class="result-label">SUBTOTAL</div><div class="result-value" id="r-subtotal">—</div></div>
       </div>
     </div>
     <div id="dobro-banner" class="dobro-banner hidden">
@@ -406,6 +409,107 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       </div>
       <div class="flex-end mt16">
         <button class="btn btn-gold" onclick="pushConsignadoRelatorio()">📄 Adicionar ao Relatório</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CARD CÁLCULO EM LOTE ═══ -->
+  <div class="card mt16" id="card-lote">
+    <div class="card-title">📋 Cálculo em Lote — Parcela a Parcela</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">
+      Calcula cada parcela selecionada individualmente, aplicando correção monetária e juros de mora.
+      Para RMC/RCC, a repetição em dobro (Art. 42 CDC) pode ser aplicada automaticamente em cada item.
+    </p>
+
+    <!-- Badge de transações carregadas -->
+    <div id="lote-badge" class="hidden" style="background:rgba(11,74,68,.07);border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-size:13px;font-weight:700;color:var(--teal)">📦 <span id="lote-count">0</span> parcelas carregadas</span>
+      <span id="lote-tipos" style="font-size:12px;color:var(--muted)"></span>
+      <span id="lote-total-orig-badge" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+
+    <div class="form-row cols-3">
+      <div>
+        <label>Índice de Correção Monetária</label>
+        <select id="lote-indice">
+          <option value="AUTO_14905">🔀 Automático — Lei 14.905/24</option>
+          <option value="IPCA">IPCA</option>
+          <option value="INPC">INPC</option>
+          <option value="IGPM">IGP-M</option>
+          <option value="SELIC">SELIC</option>
+          <option value="TJRJ">TJRJ (INPC base)</option>
+          <option value="TJAM">TJAM (INPC base)</option>
+          <option value="TJDFT">TJDFT — Distrito Federal (INPC base)</option>
+          <option value="IPCA_E">IPCA-E — STJ / Obrigações Civis (RJ)</option>
+        </select>
+      </div>
+      <div>
+        <label>Juros de Mora</label>
+        <select id="lote-mora">
+          <option value="AUTO_14905">🔀 Automático — Lei 14.905/24</option>
+          <option value="1PCT">1% a.m. Simples (Art. 406 CC)</option>
+          <option value="SELIC_MORA">SELIC mora + IPCA correção (Lei 14.905/24)</option>
+          <option value="NENHUM">Sem juros de mora</option>
+        </select>
+      </div>
+      <div>
+        <label>Data Base de Atualização</label>
+        <input type="date" id="lote-datafim">
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="flex" style="padding-top:22px">
+        <input type="checkbox" id="lote-dobro" checked>
+        <label for="lote-dobro" style="margin:0;text-transform:none;font-size:13px;cursor:pointer">
+          ⚖ <strong>Dobro automático</strong> para RMC/RCC — Art. 42, §único, CDC
+        </label>
+      </div>
+      <div class="flex-end" style="align-items:flex-end">
+        <button class="btn btn-primary" onclick="calcularLote()">▶ Calcular Todas as Parcelas</button>
+      </div>
+    </div>
+
+    <!-- Resultado em lote -->
+    <div id="lote-resultado" class="hidden">
+      <div style="overflow-x:auto;margin-top:20px">
+        <table class="data-table" id="lote-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th style="text-align:right">Valor Original</th>
+              <th style="text-align:right">Fator</th>
+              <th style="text-align:right">Correção Monet.</th>
+              <th style="text-align:right">Mora</th>
+              <th style="text-align:right">Subtotal Simples</th>
+              <th style="text-align:center">Dobro?</th>
+              <th style="text-align:right;color:var(--gold-light)">TOTAL ITEM</th>
+            </tr>
+          </thead>
+          <tbody id="lote-tbody"></tbody>
+        </table>
+      </div>
+      <!-- Totais gerais -->
+      <div id="lote-grand-total" style="background:linear-gradient(135deg,var(--teal),var(--teal-mid));color:#fff;border-radius:10px;padding:18px 24px;margin-top:14px;display:flex;flex-wrap:wrap;gap:24px;align-items:center">
+        <div style="text-align:center">
+          <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Total Original</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700" id="lote-g-original">—</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Correção + Mora</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700" id="lote-g-acrescimos">—</div>
+        </div>
+        <div style="text-align:center;border-left:2px solid rgba(255,255,255,.3);padding-left:24px">
+          <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">TOTAL GERAL ATUALIZADO</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--gold-light)" id="lote-g-total">—</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Parcelas</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700" id="lote-g-qtd">—</div>
+        </div>
+      </div>
+      <div class="flex-end mt16">
+        <button class="btn btn-gold" onclick="pushLoteRelatorio()">📄 Adicionar todas ao Relatório</button>
       </div>
     </div>
   </div>
@@ -1154,7 +1258,7 @@ const ReportBuilder = {
     });
 
     html+=`<div class="mc-total">TOTAL GERAL ATUALIZADO: ${FinancialEngine.fmt(total)} | ${this._items.length} cobrança(s)</div>
-    <div class="mc-fundamento" style="font-size:11px;margin-top:6px">LAADV Plataforma Axiomática v1.2 · AKE/UFT-1.0 · ${now}</div>`;
+    <div class="mc-fundamento" style="font-size:11px;margin-top:6px">LAADV Plataforma Axiomática v1.3 · AKE/UFT-1.0 · ${now}</div>`;
     return html;
   },
 
@@ -1175,7 +1279,7 @@ const ReportBuilder = {
 // ══════════════════════════════════════════════════════════════════════
 //  UIState
 // ══════════════════════════════════════════════════════════════════════
-const UIState={lastWB:null,lastValorBase:0,lastDataInicio:'',lastDataFim:'',lastTipo:'',comparativos:[],selAll:false,lastConsignado:null};
+const UIState={lastWB:null,lastValorBase:0,lastDataInicio:'',lastDataFim:'',lastTipo:'',comparativos:[],selAll:false,lastConsignado:null,batchTransacoes:[],lastBatchResults:[]};
 
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1420,23 +1524,217 @@ function enviarParaTaxaMedia() {
   kernel.registrarBuild('TAXA_MEDIA',`${sel.length} transações · ${FinancialEngine.fmt(totalVal)} · ${primeiraData} → ${ultimaData}`);
 }
 
-/** Atualiza totalizador RMC+RCC selecionados na aba Extratos */
+/** Atualiza totalizador RMC+RCC selecionados na aba Extratos — exibe por categoria */
 function atualizarTotalRMCRCC() {
   const body=document.getElementById('txn-body');
   const txns=body._txns||[];
-  let total=0,qtd=0;
+  let totalRMC=0,qtdRMC=0,totalRCC=0,qtdRCC=0;
   document.querySelectorAll('.txn-cb:checked').forEach(cb=>{
     const t=txns[parseInt(cb.dataset.idx)];
-    if(t&&['RMC','RCC'].includes(t.categoria)&&t.tipo==='D'){total+=t.valor;qtd++;}
+    if(!t||t.tipo!=='D') return;
+    if(t.categoria==='RMC'){ totalRMC+=t.valor; qtdRMC++; }
+    else if(t.categoria==='RCC'){ totalRCC+=t.valor; qtdRCC++; }
   });
+  const total=totalRMC+totalRCC;
+  const qtd=qtdRMC+qtdRCC;
   const wrap=document.getElementById('rmc-rcc-total');
   if(qtd>0){
+    // Bloco RMC
+    const rmcBloco=document.getElementById('rmc-bloco');
+    if(qtdRMC>0){
+      document.getElementById('rmc-total-valor').textContent=FinancialEngine.fmt(totalRMC);
+      document.getElementById('rmc-total-qtd').textContent=`(${qtdRMC} parc.)`;
+      rmcBloco.style.display='flex';rmcBloco.style.alignItems='center';rmcBloco.style.gap='4px';
+    } else { rmcBloco.style.display='none'; }
+    // Bloco RCC
+    const rccBloco=document.getElementById('rcc-bloco');
+    if(qtdRCC>0){
+      document.getElementById('rcc-total-valor').textContent=FinancialEngine.fmt(totalRCC);
+      document.getElementById('rcc-total-qtd').textContent=`(${qtdRCC} parc.)`;
+      rccBloco.style.display='flex';rccBloco.style.alignItems='center';rccBloco.style.gap='4px';
+    } else { rccBloco.style.display='none'; }
+    // Total combinado
     document.getElementById('rmc-rcc-valor').textContent=FinancialEngine.fmt(total);
     document.getElementById('rmc-rcc-qtd').textContent=`(${qtd} item${qtd>1?'s':''})`;
     wrap.classList.remove('hidden');
   } else {
     wrap.classList.add('hidden');
   }
+}
+
+// ─── CÁLCULO EM LOTE ───
+
+/** Carrega transações selecionadas no módulo de lote e abre o card */
+function enviarParaLote(){
+  const body=document.getElementById('txn-body');
+  const txns=body._txns||[];
+  const sel=[];
+  document.querySelectorAll('.txn-cb:checked').forEach(cb=>{
+    const t=txns[parseInt(cb.dataset.idx)];
+    if(t&&t.tipo==='D') sel.push(t);
+  });
+  if(!sel.length){alert('Selecione ao menos uma transação (débito) para calcular em lote.');return;}
+  UIState.batchTransacoes=sel;
+  UIState.lastBatchResults=[];
+
+  // Preenche data base com hoje por padrão
+  const hoje=new Date().toISOString().split('T')[0];
+  switchTab('calcular',document.querySelectorAll('.tab-btn')[1]);
+  setTimeout(()=>{
+    document.getElementById('card-lote').scrollIntoView({behavior:'smooth'});
+    if(!document.getElementById('lote-datafim').value)
+      document.getElementById('lote-datafim').value=hoje;
+    // Atualiza badge
+    const badge=document.getElementById('lote-badge');
+    badge.classList.remove('hidden');
+    document.getElementById('lote-count').textContent=sel.length;
+    const tipos={};
+    sel.forEach(t=>tipos[t.categoria]=(tipos[t.categoria]||0)+1);
+    document.getElementById('lote-tipos').textContent=
+      Object.entries(tipos).map(([c,n])=>`${n}× ${c}`).join('  |  ');
+    const totalOrig=sel.reduce((s,t)=>s+t.valor,0);
+    document.getElementById('lote-total-orig-badge').textContent=
+      'Total original: '+FinancialEngine.fmt(totalOrig);
+    // Oculta resultado anterior
+    document.getElementById('lote-resultado').classList.add('hidden');
+  },200);
+  kernel.registrarBuild('LOTE_IMPORT',`${sel.length} transações carregadas para cálculo em lote`);
+}
+
+/** Mapeamento de categoria para classe CSS de tag */
+function _tagClass(cat){
+  return {RMC:'tag-rmc',RCC:'tag-rmc',BX_FINAN:'tag-bx',TARIFA:'tag-tarifa',
+          SEGURO:'tag-seguro',JUROS:'tag-juros',PARCELA:'tag-parcela',OUTROS:'tag-outros'}[cat]||'tag-outros';
+}
+
+/** Executa cálculo individual em cada parcela do lote e exibe tabela discriminada */
+function calcularLote(){
+  const batch=UIState.batchTransacoes;
+  if(!batch||!batch.length){
+    alert('Nenhuma parcela carregada. Use "📊 Calcular em Lote" na aba Extratos primeiro.');return;
+  }
+  const datafim=document.getElementById('lote-datafim').value;
+  if(!datafim){alert('Informe a Data Base de Atualização.');return;}
+  const indiceVal=document.getElementById('lote-indice').value;
+  const moraVal=document.getElementById('lote-mora').value;
+  const dobroAuto=document.getElementById('lote-dobro').checked;
+
+  const tbody=document.getElementById('lote-tbody');
+  tbody.innerHTML='';
+
+  let totalOriginal=0,totalFinal=0,totalAcrescimos=0,contOK=0;
+  const batchResults=[];
+
+  for(const t of batch){
+    // Validação de datas: início deve ser anterior à data base
+    if(t.data>=datafim){
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${t.data}</td>
+        <td><span class="tag ${_tagClass(t.categoria)}">${t.categoria}</span></td>
+        <td class="text-right">${FinancialEngine.fmt(t.valor)}</td>
+        <td colspan="6" style="color:var(--warn);font-size:11px">⚠ Data da parcela igual ou posterior à data base — sem acréscimos</td>`;
+      tbody.appendChild(tr);
+      // Mesmo sem correção, o valor original entra no total
+      totalOriginal+=t.valor;
+      totalFinal+=t.valor;
+      batchResults.push({t,wb:null,corrAmount:0,subtotalSimples:t.valor,totalItem:t.valor,dobro:false,semCorrecao:true});
+      continue;
+    }
+    try{
+      const dobro=dobroAuto&&['RMC','RCC'].includes(t.categoria);
+      const cpu=new LegalCPU();
+      const wb=cpu.FETCH(t.valor,t.categoria)
+                  .DECODE(t.data,datafim,indiceVal==='AUTO_14905'?null:indiceVal)
+                  .EXECUTE(moraVal,dobro)
+                  .WRITEBACK();
+      if(!wb){
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${t.data}</td>
+          <td><span class="tag ${_tagClass(t.categoria)}">${t.categoria}</span></td>
+          <td class="text-right">${FinancialEngine.fmt(t.valor)}</td>
+          <td colspan="6" style="color:var(--danger);font-size:11px">✗ WRITEBACK bloqueado (IC &lt; 0.9)</td>`;
+        tbody.appendChild(tr);
+        continue;
+      }
+      const res=wb.result;
+      const corrAmount=res.valorCorrigido-t.valor;
+      const subtotalSimples=res.valorCorrigido+wb.mr;
+      const totalItem=wb.acc;   // já inclui dobro se aplicado
+
+      totalOriginal+=t.valor;
+      totalFinal+=totalItem;
+      totalAcrescimos+=(subtotalSimples-t.valor);
+      contOK++;
+
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td style="white-space:nowrap">${t.data}</td>
+        <td><span class="tag ${_tagClass(t.categoria)}">${t.categoria}</span></td>
+        <td class="text-right">${FinancialEngine.fmt(t.valor)}</td>
+        <td class="text-right" style="font-size:11px;color:var(--muted)">${wb.cr.toFixed(6)}</td>
+        <td class="text-right">${FinancialEngine.fmt(corrAmount)}</td>
+        <td class="text-right">${FinancialEngine.fmt(wb.mr)}</td>
+        <td class="text-right">${FinancialEngine.fmt(subtotalSimples)}</td>
+        <td style="text-align:center">${dobro?'<span style="color:var(--danger);font-weight:700;font-size:13px">✓ ×2</span>':'<span style="color:var(--muted)">—</span>'}</td>
+        <td class="text-right" style="font-weight:700;color:var(--teal);font-size:13px">${FinancialEngine.fmt(totalItem)}</td>`;
+      tbody.appendChild(tr);
+
+      batchResults.push({t,wb,corrAmount,subtotalSimples,totalItem,dobro,semCorrecao:false});
+    }catch(e){
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${t.data}</td>
+        <td><span class="tag ${_tagClass(t.categoria)}">${t.categoria}</span></td>
+        <td class="text-right">${FinancialEngine.fmt(t.valor)}</td>
+        <td colspan="6" style="color:var(--danger);font-size:11px">✗ Erro: ${escHtml(e.message)}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Linha de total geral
+  const trTot=document.createElement('tr');
+  trTot.style.cssText='background:rgba(11,74,68,.08);font-weight:700;border-top:2px solid var(--teal)';
+  trTot.innerHTML=`
+    <td colspan="2" style="font-weight:700;color:var(--teal)">TOTAL GERAL — ${contOK} de ${batch.length} parcelas calculadas</td>
+    <td class="text-right" style="font-weight:700">${FinancialEngine.fmt(totalOriginal)}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td class="text-right" style="font-weight:700">${FinancialEngine.fmt(totalAcrescimos+totalOriginal)}</td>
+    <td></td>
+    <td class="text-right" style="font-weight:700;color:var(--teal);font-size:14px">${FinancialEngine.fmt(totalFinal)}</td>`;
+  tbody.appendChild(trTot);
+
+  // Totais no banner
+  document.getElementById('lote-g-original').textContent=FinancialEngine.fmt(totalOriginal);
+  document.getElementById('lote-g-acrescimos').textContent=FinancialEngine.fmt(totalAcrescimos);
+  document.getElementById('lote-g-total').textContent=FinancialEngine.fmt(totalFinal);
+  document.getElementById('lote-g-qtd').textContent=`${batch.length}`;
+
+  UIState.lastBatchResults=batchResults;
+  document.getElementById('lote-resultado').classList.remove('hidden');
+  kernel.registrarSucesso(`LOTE:${batch.length} parcelas · Original=${FinancialEngine.fmt(totalOriginal)} · Total=${FinancialEngine.fmt(totalFinal)}`);
+}
+
+/** Adiciona todos os itens do lote ao Relatório */
+function pushLoteRelatorio(){
+  if(!UIState.lastBatchResults||!UIState.lastBatchResults.length){
+    alert('Execute o cálculo em lote primeiro (▶ Calcular Todas as Parcelas).');return;
+  }
+  const datafim=document.getElementById('lote-datafim').value;
+  let adicionados=0;
+  UIState.lastBatchResults.forEach(r=>{
+    if(!r.wb) return; // pula itens sem cálculo (data inválida / erro)
+    ReportBuilder.add({
+      wb:r.wb,
+      tipo:r.t.categoria,
+      valorBase:r.t.valor,
+      dataInicio:r.t.data,
+      dataFim:datafim
+    });
+    adicionados++;
+  });
+  alert(`✓ ${adicionados} parcela(s) adicionadas ao relatório! Total acumulado: ${ReportBuilder.count()} item(s).`);
+  kernel.registrarBuild('RELATORIO',`Lote: ${adicionados} parcelas adicionadas`);
 }
 
 // ─── CALCULAR ───
@@ -1456,27 +1754,33 @@ function executarCalculo(){
     UIState.lastWB=wb; UIState.lastValorBase=valor;
     UIState.lastDataInicio=ini; UIState.lastDataFim=fim; UIState.lastTipo=tipo;
     const res=wb.result;
-    const corrigido=wb.acc-wb.mr;
-    const corrVal=corrigido-valor;
+    // Valores SIMPLES (sempre pré-dobro): valorCorrigido = principal × fator acumulado
+    const corrAmount=res.valorCorrigido-valor;       // só a correção monetária (sem mora)
+    const subtotalSimples=res.valorCorrigido+wb.mr;  // subtotal antes do dobro
     document.getElementById('r-original').textContent=FinancialEngine.fmt(valor);
-    document.getElementById('r-correcao').textContent=FinancialEngine.fmt(corrVal);
+    document.getElementById('r-correcao').textContent=FinancialEngine.fmt(corrAmount);
     document.getElementById('r-mora').textContent=FinancialEngine.fmt(wb.mr);
     document.getElementById('r-fator').textContent=wb.cr.toFixed(6);
     document.getElementById('r-regime').textContent=wb.law;
-    document.getElementById('r-subtotal').textContent=FinancialEngine.fmt(corrigido+wb.mr);
+    // Subtotal mostra sempre o valor simples; dobro aparece no banner abaixo
+    document.getElementById('r-subtotal').textContent=FinancialEngine.fmt(subtotalSimples);
+    document.getElementById('r-subtotal-label').textContent=res.dobro?'SUBTOTAL SIMPLES':'SUBTOTAL';
     const db=document.getElementById('dobro-banner');
-    if(res.dobro){document.getElementById('r-dobro').textContent=FinancialEngine.fmt(wb.acc);db.classList.remove('hidden');}
-    else db.classList.add('hidden');
+    if(res.dobro){
+      // Mostra a fórmula: subtotal × 2 = total final — transparência total
+      document.getElementById('r-dobro').textContent=
+        `${FinancialEngine.fmt(subtotalSimples)} × 2 = ${FinancialEngine.fmt(wb.acc)}`;
+      db.classList.remove('hidden');
+    } else db.classList.add('hidden');
     document.getElementById('pipeline-out').innerHTML=cpu.renderTrace();
     document.getElementById('calc-res').classList.remove('hidden');
-    // Abre automaticamente o painel de trace técnico
     const traceDetails=document.getElementById('trace-details');
-    if(traceDetails){ traceDetails.open=false; } // fecha para não poluir, usuário abre se quiser
+    if(traceDetails){ traceDetails.open=false; }
     // Popula comparativo automaticamente
     document.getElementById('laadv-principal').value=valor.toFixed(2);
-    document.getElementById('laadv-correcao').value=corrVal.toFixed(2);
+    document.getElementById('laadv-correcao').value=corrAmount.toFixed(2);
     document.getElementById('laadv-mora').value=wb.mr.toFixed(2);
-    document.getElementById('laadv-total').value=(corrigido+wb.mr).toFixed(2);
+    document.getElementById('laadv-total').value=subtotalSimples.toFixed(2);
     document.getElementById('laadv-fundamento').value=wb.law+' · '+wb.idx;
     kernel.registrarSucesso(`CALC:${tipo}:${valor.toFixed(2)}→${FinancialEngine.fmt(wb.acc)}`);
   } catch(err){
@@ -1683,7 +1987,7 @@ const kernel=new AKEKernel();
   const hoje=new Date().toISOString().split('T')[0];
   document.getElementById('c-fim').value=hoje;
   document.getElementById('rel-database').value=hoje;
-  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.2');
+  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.3');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
   kernel.registrarBuild('PARSER','BradescoParser + INSSParser · detectarTipo() automático');
