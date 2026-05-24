@@ -245,12 +245,13 @@ details[open] #trace-arrow{transform:rotate(90deg)}
         </select>
       </div>
       <div>
-        <label>Data da Cobrança (Início)</label>
+        <label>Data da Cobrança — Início da Correção</label>
         <input type="date" id="c-inicio">
       </div>
       <div>
-        <label>Data Base de Atualização</label>
+        <label>Termo Final / Data Base de Atualização</label>
         <input type="date" id="c-fim">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Data de hoje, ou data específica da sentença</div>
       </div>
     </div>
     <div class="form-row cols-3">
@@ -269,17 +270,33 @@ details[open] #trace-arrow{transform:rotate(90deg)}
           <option value="TJRJ">TJRJ (INPC base)</option>
           <option value="TJAM">TJAM (INPC base)</option>
           <option value="TJDFT">TJDFT — Distrito Federal (INPC base)</option>
-          <option value="IPCA_E">IPCA-E — STJ / Obrigações Civis (RJ)</option>
+          <option value="IPCA_E">IPCA-E — STJ / Obrigações Civis</option>
+          <option value="NENHUMA">Sem correção monetária</option>
         </select>
       </div>
       <div>
         <label>Juros de Mora</label>
-        <select id="c-mora">
+        <select id="c-mora" onchange="toggleMoraTaxa('c')">
           <option value="AUTO_14905">🔀 Automático — Lei 14.905/24</option>
           <option value="1PCT">1% a.m. Simples (Art. 406 CC)</option>
           <option value="SELIC_MORA">SELIC mora + IPCA correção (Lei 14.905/24)</option>
           <option value="NENHUM">Sem juros de mora</option>
+          <option value="MANUAL_TAXA">Taxa manual (% a.m.) — remuneratórios/compensatórios</option>
         </select>
+      </div>
+    </div>
+    <!-- Opções avançadas de mora -->
+    <div class="form-row cols-3" style="margin-top:-4px">
+      <div></div>
+      <div>
+        <label>Início dos Juros de Mora <span style="font-weight:400;text-transform:none;font-size:10px">(opcional — deixe vazio para usar data da cobrança)</span></label>
+        <input type="date" id="c-mora-inicio">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Ex: data da citação, vencimento, data fixada pela sentença</div>
+      </div>
+      <div id="c-mora-taxa-wrap" class="hidden">
+        <label>Taxa de Mora Manual (% a.m.)</label>
+        <input type="number" id="c-mora-taxa-pct" step="0.0001" min="0" placeholder="Ex: 1.0000 para 1% a.m.">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">12% a.a. = 1% a.m. · Informe a taxa mensal</div>
       </div>
     </div>
     <div class="form-row cols-2">
@@ -332,10 +349,16 @@ details[open] #trace-arrow{transform:rotate(90deg)}
   <!-- ═══ CARD TAXA MÉDIA BACEN ═══ -->
   <div class="card mt16" id="card-taxamedia">
     <div class="card-title">💰 Conversão Consignado — Taxa Média BACEN</div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">
-      Some as cobranças RMC/RCC, informe o período e busque a taxa média de mercado do BACEN.
-      O sistema calcula o que deveria ser cobrado num empréstimo consignado correto (fórmula Price — mesma da Calculadora do Cidadão).
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      Some as cobranças RMC/RCC e informe o período. O sistema calcula o que deveria ser cobrado num empréstimo consignado correto (fórmula Price — mesma da Calculadora do Cidadão BACEN).
     </p>
+    <!-- Callout explicativo sobre a taxa -->
+    <div style="background:#FFF8E1;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#5D4037">
+      <strong>⚠ Como usar corretamente a Taxa Média BACEN:</strong><br>
+      A taxa de referência deve ser a do <strong>mês do saque / contratação</strong> do empréstimo — não a média do período de descontos.
+      Use o campo <em>"Data do Saque"</em> para buscar a taxa daquele mês específico via SGS BACEN.<br>
+      <span style="font-size:11px;opacity:.85">A taxa SGS é a <strong>média ponderada por volume</strong> de todas as operações — diferente da média aritmética simples das instituições (que costuma ser maior).</span>
+    </div>
     <div class="form-row cols-3">
       <div>
         <label>Tipo de Vínculo do Cliente</label>
@@ -346,11 +369,12 @@ details[open] #trace-arrow{transform:rotate(90deg)}
         </select>
       </div>
       <div>
-        <label>Data do Primeiro Desconto</label>
-        <input type="date" id="tm-inicio">
+        <label>📅 Data do Saque / Contratação <span style="color:var(--danger)">★</span></label>
+        <input type="date" id="tm-saque">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Data do TED/saque — usada para buscar a taxa daquele mês</div>
       </div>
       <div>
-        <label>Data do Último Desconto</label>
+        <label>Termo Final (Data do Último Desconto)</label>
         <input type="date" id="tm-fim">
       </div>
     </div>
@@ -361,17 +385,20 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       </div>
       <div>
         <label>Número de Parcelas (meses)</label>
-        <input type="number" id="tm-parcelas" step="1" min="1" placeholder="calculado automaticamente">
+        <input type="number" id="tm-parcelas" step="1" min="1" placeholder="Ex: 84">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Informe conforme contrato, ou calcule pelo período</div>
       </div>
       <div>
         <label>Taxa Média a.m. (% — auto ou manual)</label>
-        <input type="number" id="tm-taxa-manual" step="0.0001" min="0.01" placeholder="Ex: 1.8100">
+        <input type="number" id="tm-taxa-manual" step="0.0001" min="0.01" placeholder="Ex: 1.7672">
         <div id="tm-taxa-info" style="font-size:10px;color:var(--muted);margin-top:3px"></div>
       </div>
     </div>
+    <!-- Campo legado oculto para compatibilidade com enviarParaTaxaMedia() -->
+    <input type="hidden" id="tm-inicio">
     <div class="flex-end">
       <button class="btn btn-outline" onclick="abrirBACEN()">🔗 Abrir BACEN</button>
-      <button class="btn btn-primary" onclick="buscarTaxaMedia()">📡 Buscar Taxa Média BACEN</button>
+      <button class="btn btn-primary" onclick="buscarTaxaMedia()">📡 Buscar Taxa do Mês do Saque</button>
       <button class="btn btn-gold" onclick="calcularConsignado()">▶ Calcular Conversão</button>
     </div>
 
@@ -443,22 +470,34 @@ details[open] #trace-arrow{transform:rotate(90deg)}
           <option value="TJRJ">TJRJ (INPC base)</option>
           <option value="TJAM">TJAM (INPC base)</option>
           <option value="TJDFT">TJDFT — Distrito Federal (INPC base)</option>
-          <option value="IPCA_E">IPCA-E — STJ / Obrigações Civis (RJ)</option>
+          <option value="IPCA_E">IPCA-E — STJ / Obrigações Civis</option>
+          <option value="NENHUMA">Sem correção monetária</option>
         </select>
       </div>
       <div>
         <label>Juros de Mora</label>
-        <select id="lote-mora">
+        <select id="lote-mora" onchange="toggleMoraTaxa('lote')">
           <option value="AUTO_14905">🔀 Automático — Lei 14.905/24</option>
           <option value="1PCT">1% a.m. Simples (Art. 406 CC)</option>
           <option value="SELIC_MORA">SELIC mora + IPCA correção (Lei 14.905/24)</option>
           <option value="NENHUM">Sem juros de mora</option>
+          <option value="MANUAL_TAXA">Taxa manual (% a.m.) — remuneratórios/compensatórios</option>
         </select>
       </div>
       <div>
-        <label>Data Base de Atualização</label>
+        <label>Termo Final / Data Base de Atualização</label>
         <input type="date" id="lote-datafim">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Data de hoje ou data determinada pela sentença</div>
       </div>
+    </div>
+    <div class="form-row cols-3" style="margin-top:-4px">
+      <div></div>
+      <div id="lote-mora-taxa-wrap" class="hidden">
+        <label>Taxa de Mora Manual (% a.m.)</label>
+        <input type="number" id="lote-mora-taxa-pct" step="0.0001" min="0" placeholder="Ex: 1.0000 para 1% a.m.">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">12% a.a. = 1% a.m.</div>
+      </div>
+      <div></div>
     </div>
     <div class="form-row cols-2">
       <div class="flex" style="padding-top:22px">
@@ -933,22 +972,66 @@ class LegalCPU {
     return this;
   }
 
-  EXECUTE(moraType='AUTO_14905',dobro=false) {
+  /**
+   * EXECUTE — calcula correção + mora.
+   * @param {string} moraType  'AUTO_14905'|'1PCT'|'SELIC_MORA'|'NENHUM'|'MANUAL_TAXA'
+   * @param {boolean} dobro    aplica repetição em dobro (Art. 42 CDC)
+   * @param {object} opts      {moraIni: 'YYYY-MM-DD'|null, taxaManualPct: number|null}
+   *   moraIni      — data de início dos juros de mora (ex: data da citação).
+   *                  Se omitido, usa a data de início da correção.
+   *   taxaManualPct — taxa mensal em % para moraType='MANUAL_TAXA'
+   */
+  EXECUTE(moraType='AUTO_14905', dobro=false, opts={}) {
+    const { moraIni=null, taxaManualPct=null } = opts;
     if (this._halted){ this._emit('error','EXECUTE: CPU HALTED');return this; }
     const base=this.R.ACC;
     let res;
-    if (this.R.LAW==='MANUAL') {
+
+    // ── Correção monetária ───────────────────────────────────────────
+    if (this.R.LAW==='MANUAL' && this._idxManual==='NENHUMA') {
+      // Sem correção: fator = 1, apenas mora será calculada
+      res={valorCorrigido:base,mora:0,fatorTotal:1,
+           periodos:[{regime:'SEM CORREÇÃO',idx:'NENHUMA',de:this._ini,ate:this._fim,fator:1,mora:0}]};
+      this._emit('execute','SEM CORREÇÃO — fator=1.000000');
+    } else if (this.R.LAW==='MANUAL') {
       const f=FinancialEngine.acumularIndice(this._idxManual,this._ini,this._fim);
-      let m=0;
-      if (moraType!=='NENHUM') m=FinancialEngine.calcMoraSimples(base,this._ini,this._fim,1.0);
-      if (moraType==='SELIC_MORA'){ const fs=FinancialEngine.acumularIndice('SELIC',this._ini,this._fim);m=base*(fs-1); }
-      res={valorCorrigido:base*f,mora:m,fatorTotal:f,periodos:[{regime:'MANUAL',idx:this._idxManual,de:this._ini,ate:this._fim,fator:f,mora:m}]};
+      res={valorCorrigido:base*f,mora:0,fatorTotal:f,
+           periodos:[{regime:'MANUAL',idx:this._idxManual,de:this._ini,ate:this._fim,fator:f,mora:0}]};
     } else {
       res=FinancialEngine.calcLei14905(base,this._ini,this._fim);
-      if (moraType==='NENHUM') res.mora=0;
-      if (moraType==='1PCT') res.mora=FinancialEngine.calcMoraSimples(base,this._ini,this._fim,1.0);
-      if (moraType==='SELIC_MORA'){ const fs=FinancialEngine.acumularIndice('SELIC',this._ini,this._fim);res.mora=base*(fs-1); }
     }
+
+    // ── Juros de mora ────────────────────────────────────────────────
+    // data de início da mora: campo específico ou, se vazio, data início da cobrança
+    const mIni = (moraIni && moraIni>this._ini) ? moraIni : this._ini;
+    const mFim = this._fim;
+    const mBase = res.valorCorrigido; // mora incide sobre valor corrigido (STJ)
+
+    if (moraType==='NENHUM') {
+      res.mora=0;
+    } else if (moraType==='MANUAL_TAXA') {
+      const pct = (taxaManualPct!=null && !isNaN(taxaManualPct)) ? taxaManualPct : 1.0;
+      res.mora = FinancialEngine.calcMoraSimples(mBase, mIni, mFim, pct);
+      this._emit('execute',`MORA MANUAL ${pct}% a.m. · início=${mIni}`);
+    } else if (moraType==='SELIC_MORA') {
+      const fs=FinancialEngine.acumularIndice('SELIC',mIni,mFim);
+      res.mora=mBase*(fs-1);
+      if (mIni!==this._ini) this._emit('execute',`MORA SELIC início=${mIni}`);
+    } else if (moraType==='1PCT') {
+      res.mora=FinancialEngine.calcMoraSimples(mBase,mIni,mFim,1.0);
+      if (mIni!==this._ini) this._emit('execute',`MORA 1% a.m. início=${mIni}`);
+    } else {
+      // AUTO_14905: respeita o que calcLei14905 calculou, mas recalcula se moraIni diferente
+      if (mIni!==this._ini) {
+        // Recalcula mora com novo início, mantendo tipo automático
+        const fdt=new Date(mFim+'T00:00:00');
+        const sdt=new Date('2024-08-30T00:00:00');
+        if (fdt<=sdt) res.mora=FinancialEngine.calcMoraSimples(mBase,mIni,mFim,1.0);
+        else { const fs=FinancialEngine.acumularIndice('SELIC',mIni,mFim); res.mora=mBase*(fs-1); }
+        this._emit('execute',`MORA AUTO início-override=${mIni}`);
+      }
+    }
+
     this.R.CR=res.fatorTotal; this.R.MR=res.mora;
     this.R.ACC=res.valorCorrigido+res.mora;
     this._emit('execute',
@@ -959,7 +1042,7 @@ class LegalCPU {
       this._emit('execute',`DOBRO  CDC.Art42: ${FinancialEngine.fmt(antes)} × 2 = ${FinancialEngine.fmt(this.R.ACC)}`);
     }
     this.R.PC++;
-    this._result={...res,dobro,totalFinal:this.R.ACC};
+    this._result={...res,dobro,totalFinal:this.R.ACC,moraIni:mIni};
     return this;
   }
 
@@ -1398,44 +1481,65 @@ function monthsBetween(d1, d2) {
 /** Abre o relatório BACEN Histórico de Taxas de Juros para a modalidade selecionada */
 function abrirBACEN() {
   const tipo=document.getElementById('tm-tipo').value;
+  const saque=document.getElementById('tm-saque').value;
   const ini=document.getElementById('tm-inicio').value;
   const cfg=LIBRARY.BACEN_SGS[tipo];
-  const periodo=ini||new Date().toISOString().slice(0,10);
+  const periodo=saque||ini||new Date().toISOString().slice(0,10);
   const url=`https://www.bcb.gov.br/estatisticas/reporttxjuroshistorico?codigoSegmento=1&codigoModalidade=${cfg.modalidade}&InicioPeriodo=${periodo}`;
   window.open(url,'_blank');
   kernel.registrarBuild('BACEN',`Abrir: ${cfg.label} a partir de ${periodo}`);
 }
 
-/** Busca taxa média mensal via BACEN SGS API (CORS habilitado) */
+/** Busca taxa média via BACEN SGS API — usa data do saque quando disponível */
 async function buscarTaxaMedia() {
   const tipo=document.getElementById('tm-tipo').value;
-  const ini=document.getElementById('tm-inicio').value;
+  const saque=document.getElementById('tm-saque').value;   // ★ data do saque (prioritária)
+  const ini=document.getElementById('tm-inicio').value;    // legado (primeiro desconto)
   const fim=document.getElementById('tm-fim').value||new Date().toISOString().slice(0,10);
-  if(!ini){alert('Informe a data do primeiro desconto.');return;}
   const cfg=LIBRARY.BACEN_SGS[tipo];
-  // SGS espera DD/MM/YYYY
-  const iniSGS=ini.split('-').reverse().join('/');
-  const fimSGS=fim.split('-').reverse().join('/');
-  const url=`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${cfg.sgsCodigo}/dados?formato=json&dataInicial=${iniSGS}&dataFinal=${fimSGS}`;
   const infoEl=document.getElementById('tm-taxa-info');
+
+  // ── Estratégia de busca ─────────────────────────────────────────────────
+  // Prioridade 1: data do saque → busca APENAS aquele mês
+  // Prioridade 2: período de descontos → média ao longo do período
+  let iniSGS, fimSGS, modoLabel;
+  if (saque) {
+    // Mês completo do saque: do dia 01 ao último dia do mês
+    const d=new Date(saque+'T00:00:00');
+    const iniMes=new Date(d.getFullYear(),d.getMonth(),1);
+    const fimMes=new Date(d.getFullYear(),d.getMonth()+1,0);
+    iniSGS=`${String(iniMes.getDate()).padStart(2,'0')}/${String(iniMes.getMonth()+1).padStart(2,'0')}/${iniMes.getFullYear()}`;
+    fimSGS=`${String(fimMes.getDate()).padStart(2,'0')}/${String(fimMes.getMonth()+1).padStart(2,'0')}/${fimMes.getFullYear()}`;
+    modoLabel=`Taxa de ${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} (mês do saque)`;
+  } else if (ini) {
+    iniSGS=ini.split('-').reverse().join('/');
+    fimSGS=fim.split('-').reverse().join('/');
+    modoLabel=`Média do período ${iniSGS} → ${fimSGS}`;
+  } else {
+    alert('Informe a Data do Saque / Contratação (campo destacado com ★) ou ao menos a Data do Primeiro Desconto.');
+    return;
+  }
+
   infoEl.textContent='Consultando BACEN...';
+  const url=`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${cfg.sgsCodigo}/dados?formato=json&dataInicial=${iniSGS}&dataFinal=${fimSGS}`;
   try {
     kernel.registrarBuild('BACEN',`SGS ${cfg.sgsCodigo} · ${iniSGS} → ${fimSGS}`);
     const resp=await fetch(url);
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const dados=await resp.json();
-    if(!dados.length) throw new Error('Sem dados para o período');
+    if(!dados.length) throw new Error('Sem dados para o período informado — verifique a data do saque');
     const media=dados.reduce((s,d)=>s+parseFloat(d.valor),0)/dados.length;
-    // Preenche o campo de taxa (editável)
     document.getElementById('tm-taxa-manual').value=media.toFixed(4);
-    infoEl.textContent=`Média de ${dados.length} mês(es) · BACEN SGS ${cfg.sgsCodigo} · ${cfg.label}`;
-    // Calcula N parcelas automaticamente
-    const n=monthsBetween(ini,fim);
-    document.getElementById('tm-parcelas').value=n;
-    kernel.registrarBuild('BACEN',`Taxa média: ${media.toFixed(4)}% a.m. (${dados.length} obs.)`);
+    infoEl.innerHTML=`<span style="color:var(--success);font-weight:700">✓</span> ${modoLabel} · ${cfg.label} · <strong>${media.toFixed(4)}% a.m.</strong>`;
+    // Calcula parcelas se tiver período
+    if (ini && fim) {
+      const n=monthsBetween(ini,fim);
+      if(!document.getElementById('tm-parcelas').value) document.getElementById('tm-parcelas').value=n;
+    }
+    kernel.registrarBuild('BACEN',`${modoLabel}: ${media.toFixed(4)}% a.m.`);
   } catch(err) {
     infoEl.textContent='';
-    alert('Não foi possível buscar o BACEN automaticamente: '+err.message+'\n\nDigite a taxa manualmente no campo acima (verifique no site BACEN com o botão "Abrir BACEN").');
+    alert('Não foi possível buscar do BACEN: '+err.message+'\n\nInsira a taxa manualmente ou use o botão "Abrir BACEN" para consultar o site.');
     kernel.registrarBuild('BACEN_ERR',err.message);
   }
 }
@@ -1519,9 +1623,10 @@ function enviarParaTaxaMedia() {
   const ultimaData=datas[datas.length-1];
   const nMeses=monthsBetween(primeiraData,ultimaData)||1;
   document.getElementById('tm-total').value=totalVal.toFixed(2);
-  document.getElementById('tm-inicio').value=primeiraData;
+  document.getElementById('tm-inicio').value=primeiraData;  // campo hidden legado
   document.getElementById('tm-fim').value=ultimaData;
   document.getElementById('tm-parcelas').value=nMeses;
+  // Não preenche tm-saque automaticamente — usuário deve informar a data do saque/contratação
   switchTab('calcular',document.querySelectorAll('.tab-btn')[1]);
   setTimeout(()=>document.getElementById('card-taxamedia').scrollIntoView({behavior:'smooth'}),200);
   kernel.registrarBuild('TAXA_MEDIA',`${sel.length} transações · ${FinancialEngine.fmt(totalVal)} · ${primeiraData} → ${ultimaData}`);
@@ -1620,6 +1725,8 @@ function calcularLote(){
   if(!datafim){alert('Informe a Data Base de Atualização.');return;}
   const indiceVal=document.getElementById('lote-indice').value;
   const moraVal=document.getElementById('lote-mora').value;
+  const loteMoraTaxaPct=moraVal==='MANUAL_TAXA'?parseFloat(document.getElementById('lote-mora-taxa-pct').value)||null:null;
+  if(moraVal==='MANUAL_TAXA'&&!loteMoraTaxaPct){alert('Informe a taxa de mora manual (% a.m.) para o lote.');return;}
   const dobroAuto=document.getElementById('lote-dobro').checked;
 
   const tbody=document.getElementById('lote-tbody');
@@ -1648,7 +1755,7 @@ function calcularLote(){
       const cpu=new LegalCPU();
       const wb=cpu.FETCH(t.valor,t.categoria)
                   .DECODE(t.data,datafim,indiceVal==='AUTO_14905'?null:indiceVal)
-                  .EXECUTE(moraVal,dobro)
+                  .EXECUTE(moraVal,dobro,{taxaManualPct:loteMoraTaxaPct})
                   .WRITEBACK();
       if(!wb){
         const tr=document.createElement('tr');
@@ -1748,11 +1855,14 @@ function executarCalculo(){
   const valor=parseFloat(document.getElementById('c-valor').value);
   const indice=document.getElementById('c-indice').value;
   const mora=document.getElementById('c-mora').value;
+  const moraIni=document.getElementById('c-mora-inicio').value||null;
+  const taxaManualPct=mora==='MANUAL_TAXA'?parseFloat(document.getElementById('c-mora-taxa-pct').value)||null:null;
   const dobro=document.getElementById('c-dobro').checked&&['RMC','RCC'].includes(tipo);
   if(!ini||!fim||!valor){alert('Preencha: valor, data início e data fim.');return;}
+  if(mora==='MANUAL_TAXA'&&!taxaManualPct){alert('Informe a taxa de mora manual (% a.m.).');return;}
   try {
     const cpu=new LegalCPU();
-    const wb=cpu.FETCH(valor,tipo).DECODE(ini,fim,indice==='AUTO_14905'?null:indice).EXECUTE(mora,dobro).WRITEBACK();
+    const wb=cpu.FETCH(valor,tipo).DECODE(ini,fim,indice==='AUTO_14905'?null:indice).EXECUTE(mora,dobro,{moraIni,taxaManualPct}).WRITEBACK();
     if(!wb){alert('WRITEBACK bloqueado — IC < 0.9. Verifique os dados inseridos.');return;}
     UIState.lastWB=wb; UIState.lastValorBase=valor;
     UIState.lastDataInicio=ini; UIState.lastDataFim=fim; UIState.lastTipo=tipo;
@@ -1792,13 +1902,22 @@ function executarCalculo(){
   }
 }
 
+/** Mostra/oculta campo de taxa manual quando mora=MANUAL_TAXA
+ *  prefix = 'c' (calcular) ou 'lote' */
+function toggleMoraTaxa(prefix){
+  const mora=document.getElementById(prefix+'-mora').value;
+  const wrap=document.getElementById(prefix+'-mora-taxa-wrap');
+  if(wrap) mora==='MANUAL_TAXA'?wrap.classList.remove('hidden'):wrap.classList.add('hidden');
+}
+
 function limparCalculo(){
-  ['c-inicio','c-fim','c-valor'].forEach(id=>document.getElementById(id).value='');
+  ['c-inicio','c-fim','c-valor','c-mora-inicio','c-mora-taxa-pct'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('c-tipo').selectedIndex=0;
   document.getElementById('c-indice').selectedIndex=0;
   document.getElementById('c-mora').selectedIndex=0;
   document.getElementById('c-dobro').checked=false;
   document.getElementById('calc-res').classList.add('hidden');
+  document.getElementById('c-mora-taxa-wrap').classList.add('hidden');
   UIState.lastWB=null;
 }
 
