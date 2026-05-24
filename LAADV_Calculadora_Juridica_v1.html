@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.3</title>
+<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.3.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
@@ -157,7 +157,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 <div class="header">
   <div>
     <div class="hd-title">LAADV — Plataforma Axiomática</div>
-    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.3</div>
+    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.3.3</div>
   </div>
   <div class="hd-right">
     <span class="q-chip" id="header-q">Q=—</span>
@@ -359,7 +359,10 @@ details[open] #trace-arrow{transform:rotate(90deg)}
           <div class="fundamento-title">⚖ Sistema de Apuração — para Impugnação</div>
           <div class="fundamento-sub">Texto formal gerado automaticamente — copie e cole na peça processual</div>
         </div>
-        <button class="btn-copy" id="r-fundamento-btn" onclick="copiarFundamento('r-fundamento-txt','r-fundamento-btn')">📋 Copiar Texto</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-copy" id="r-fundamento-pdf" onclick="gerarFundamentoPDF('calculo')" style="background:var(--gold);color:var(--teal)">📄 Gerar PDF</button>
+          <button class="btn-copy" id="r-fundamento-btn" onclick="copiarFundamento('r-fundamento-txt','r-fundamento-btn')">📋 Copiar Texto</button>
+        </div>
       </div>
       <div class="fundamento-text" id="r-fundamento-txt">—</div>
     </div>
@@ -402,15 +405,21 @@ details[open] #trace-arrow{transform:rotate(90deg)}
         <input type="date" id="tm-fim">
       </div>
     </div>
-    <div class="form-row cols-3">
+    <div class="form-row cols-4">
       <div>
-        <label>Total Descontado RMC/RCC (R$)</label>
+        <label>Valor do Saque / TED / Contrato (R$) <span style="color:var(--danger)">★</span></label>
+        <input type="number" id="tm-saque-valor" step="0.01" min="0.01" placeholder="0,00">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">PV do empréstimo — base para o PMT (prestação justa)</div>
+      </div>
+      <div>
+        <label>Total Descontado do Extrato (R$)</label>
         <input type="number" id="tm-total" step="0.01" min="0.01" placeholder="0,00">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Soma de todas as parcelas RMC/RCC descontadas</div>
       </div>
       <div>
         <label>Número de Parcelas (meses)</label>
         <input type="number" id="tm-parcelas" step="1" min="1" placeholder="Ex: 84">
-        <div style="font-size:10px;color:var(--muted);margin-top:3px">Informe conforme contrato, ou calcule pelo período</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Conforme contrato</div>
       </div>
       <div>
         <label>Taxa Média a.m. (% — auto ou manual)</label>
@@ -458,6 +467,20 @@ details[open] #trace-arrow{transform:rotate(90deg)}
           </div>
         </div>
       </div>
+      <!-- Breakdown detalhado da subtração -->
+      <div id="tm-r-calculo-box" style="background:rgba(255,255,255,.08);border-radius:8px;padding:14px 18px;margin-top:12px;font-family:'Courier New',monospace;font-size:12px;line-height:2.3;border:1px solid rgba(255,255,255,.15)">
+        <div style="font-size:10px;opacity:.55;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Memória de Cálculo — Apuração do Indébito</div>
+        <div><span style="opacity:.75">Valor do saque / contrato (PV)  :</span> <strong id="tm-r-calc-pv" style="color:#A8D8D8">—</strong></div>
+        <div><span style="opacity:.75">Prestação justa PMT (taxa BACEN) :</span> <strong id="tm-r-calc-pmt2" style="color:#80FFDB">—</strong><span style="opacity:.5"> /mês</span></div>
+        <div><span style="opacity:.75">Total correto (PMT × n parcelas)  :</span> <strong id="tm-r-calc-correto" style="color:#80FFDB">—</strong></div>
+        <div style="border-top:1px solid rgba(255,255,255,.18);margin-top:6px;padding-top:6px">
+          <span style="opacity:.75">Total descontado do extrato        :</span> <strong id="tm-r-calc-extrato" style="color:#FF8A80">—</strong>
+        </div>
+        <div><span style="opacity:.75">(−) Total correto (PMT × n)        :</span> <strong id="tm-r-calc-correto2" style="color:#80FFDB">—</strong></div>
+        <div style="border-top:1px solid rgba(255,255,255,.18);margin-top:6px;padding-top:6px">
+          <span style="opacity:.75">(=) <strong>Excesso a atualizar</strong>             :</span> <strong id="tm-r-calc-excesso" style="color:var(--gold-light);font-size:14px">—</strong>
+        </div>
+      </div>
       <div class="dobro-banner mt8" id="tm-r-dobro-banner">
         ⚖ Devolução em Dobro — Art. 42 CDC: <span id="tm-r-dobro">—</span>
       </div>
@@ -471,7 +494,10 @@ details[open] #trace-arrow{transform:rotate(90deg)}
             <div class="fundamento-title">⚖ Sistema de Apuração — para Impugnação</div>
             <div class="fundamento-sub">Fundamento formal da taxa e metodologia — copie para a peça processual</div>
           </div>
-          <button class="btn-copy" id="tm-fundamento-btn" onclick="copiarFundamento('tm-fundamento-txt','tm-fundamento-btn')">📋 Copiar Texto</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-copy" id="tm-fundamento-pdf" onclick="gerarFundamentoPDF('consignado')" style="background:var(--gold);color:var(--teal)">📄 Gerar PDF</button>
+            <button class="btn-copy" id="tm-fundamento-btn" onclick="copiarFundamento('tm-fundamento-txt','tm-fundamento-btn')">📋 Copiar Texto</button>
+          </div>
         </div>
         <div class="fundamento-text" id="tm-fundamento-txt">—</div>
       </div>
@@ -1596,24 +1622,46 @@ function calcPMT(pv, iMensal, n) {
 
 /** Calcula conversão consignado e exibe resultado comparativo */
 function calcularConsignado() {
-  const total=parseFloat(document.getElementById('tm-total').value);
+  // Leitura dos campos
+  const totalExtrato=parseFloat(document.getElementById('tm-total').value);          // total descontado do extrato
+  const saqueEl=document.getElementById('tm-saque-valor');
+  const valorSaqueRaw=saqueEl?parseFloat(saqueEl.value):NaN;
+  // PV para PMT: usa valor do saque se preenchido; fallback = total do extrato
+  const valorSaque=(!isNaN(valorSaqueRaw)&&valorSaqueRaw>0)?valorSaqueRaw:totalExtrato;
   const n=parseInt(document.getElementById('tm-parcelas').value);
   const taxaPct=parseFloat(document.getElementById('tm-taxa-manual').value);
   const ini=document.getElementById('tm-inicio').value;
   const fim=document.getElementById('tm-fim').value||new Date().toISOString().slice(0,10);
   const tipo=document.getElementById('tm-tipo').value;
-  if(!total||!n||!taxaPct){alert('Preencha: total descontado, nº de parcelas e taxa média.');return;}
+  const saque=document.getElementById('tm-saque').value||'';
+  if(!totalExtrato||!n||!taxaPct){alert('Preencha: Total Descontado do Extrato, nº de parcelas e taxa média.');return;}
   const i=taxaPct/100;
-  const pmt=calcPMT(total,i,n);           // prestação que deveria ser cobrada
-  const totalCorreto=pmt*n;               // total ao longo do período
-  const excesso=Math.max(0,total-totalCorreto);
+  // PMT calculado sobre o valor do saque (PV do contrato)
+  const pmt=calcPMT(valorSaque,i,n);
+  const totalCorreto=pmt*n;                           // o que o banco deveria ter cobrado
+  const excesso=Math.max(0,totalExtrato-totalCorreto); // indébito = extrato − correto
   const dobro=excesso*2;
-  document.getElementById('tm-r-descontado').textContent=FinancialEngine.fmt(total);
+  // Preenche result-grid principal
+  document.getElementById('tm-r-descontado').textContent=FinancialEngine.fmt(totalExtrato);
   document.getElementById('tm-r-correto').textContent=FinancialEngine.fmt(totalCorreto);
   document.getElementById('tm-r-excesso').textContent=FinancialEngine.fmt(excesso);
   document.getElementById('tm-r-pmt').textContent=FinancialEngine.fmt(pmt)+'/mês';
   document.getElementById('tm-r-taxa').textContent=taxaPct.toFixed(4)+'% a.m.';
   document.getElementById('tm-r-periodo').textContent=`${n} parcelas · ${ini} → ${fim}`;
+  // Preenche breakdown de subtração
+  const elPv=document.getElementById('tm-r-calc-pv');
+  const elPmt2=document.getElementById('tm-r-calc-pmt2');
+  const elCorr=document.getElementById('tm-r-calc-correto');
+  const elExtr=document.getElementById('tm-r-calc-extrato');
+  const elCorr2=document.getElementById('tm-r-calc-correto2');
+  const elExc=document.getElementById('tm-r-calc-excesso');
+  if(elPv) elPv.textContent=FinancialEngine.fmt(valorSaque);
+  if(elPmt2) elPmt2.textContent=FinancialEngine.fmt(pmt);
+  if(elCorr) elCorr.textContent=FinancialEngine.fmt(totalCorreto);
+  if(elExtr) elExtr.textContent=FinancialEngine.fmt(totalExtrato);
+  if(elCorr2) elCorr2.textContent=FinancialEngine.fmt(totalCorreto);
+  if(elExc) elExc.textContent=FinancialEngine.fmt(excesso);
+  // Dobro banner
   const dbanner=document.getElementById('tm-r-dobro-banner');
   if(excesso>0.01){
     document.getElementById('tm-r-dobro').textContent=FinancialEngine.fmt(dobro);
@@ -1622,11 +1670,15 @@ function calcularConsignado() {
     dbanner.classList.add('hidden');
   }
   document.getElementById('tm-resultado').classList.remove('hidden');
-  const saque=document.getElementById('tm-saque').value||'';
-  UIState.lastConsignado={total,n,taxa:taxaPct,pmt,totalCorreto,excesso,dobro,ini,fim,tipo,saque};
-  // Gera sistema de apuração para impugnação
+  // Salva estado para relatório e fundamento
+  UIState.lastConsignado={
+    total:totalExtrato,     // total descontado do extrato
+    valorSaque,             // PV do contrato/saque
+    n,taxa:taxaPct,pmt,totalCorreto,excesso,dobro,ini,fim,tipo,saque
+  };
+  // Gera sistema de apuração
   document.getElementById('tm-fundamento-txt').textContent=gerarFundamentoConsignado();
-  kernel.registrarSucesso(`CONSIG:${FinancialEngine.fmt(total)}→PMT=${FinancialEngine.fmt(pmt)},excesso=${FinancialEngine.fmt(excesso)}`);
+  kernel.registrarSucesso(`CONSIG:PV=${FinancialEngine.fmt(valorSaque)},PMT=${FinancialEngine.fmt(pmt)},extrato=${FinancialEngine.fmt(totalExtrato)},excesso=${FinancialEngine.fmt(excesso)}`);
 }
 
 /** Envia dados do consignado para o relatório */
@@ -2058,7 +2110,7 @@ function gerarFundamentoCalculo(){
  • Cobrança indevida de RMC/RCC: vedação à vinculação de crédito/débito
    automático sem autorização expressa — art. 39, III e VI, CDC;
    Resolução BACEN nº 3.694/2009; Resolução BACEN nº 4.676/2018
- • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3`;
+ • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3.3`;
 }
 
 /** Gera texto formal do sistema de apuração para conversão consignado */
@@ -2070,7 +2122,8 @@ function gerarFundamentoConsignado(){
     ?`Mês de ${new Date(c.saque+'T00:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'})} (data do saque/contratação)`
     :'Período informado';
   const iMensal=(c.taxa/100);
-  const pmtFormula=`PV × i / (1 − (1+i)^−n) = ${FinancialEngine.fmt(c.total)} × ${iMensal.toFixed(6)} / (1 − (1+${iMensal.toFixed(6)})^−${c.n})`;
+  const pvFmt=FinancialEngine.fmt(c.valorSaque);
+  const pmtFormula=`PV × i / (1−(1+i)^−n) = ${pvFmt} × ${iMensal.toFixed(6)} / (1−(1+${iMensal.toFixed(6)})^−${c.n})`;
   return `╔══════════════════════════════════════════════════════════════╗
 ║   SISTEMA DE APURAÇÃO — CRÉDITO CONSIGNADO (TAXA MÉDIA BACEN) ║
 ║              Data do cálculo: ${hoje.padEnd(12)}                   ║
@@ -2098,19 +2151,20 @@ function gerarFundamentoConsignado(){
 
  CÁLCULO PELA FÓRMULA PRICE (PMT)
  ─────────────────────────────────────────────────────────────
+ Valor do Saque / Contrato (PV) : ${pvFmt}
+ Taxa média BACEN SGS           : ${c.taxa.toFixed(4)}% a.m.
+ Número de parcelas (n)         : ${c.n} meses
  Fórmula: ${pmtFormula}
-
- Total efetivamente descontado : ${FinancialEngine.fmt(c.total)}
- Número de parcelas            : ${c.n} meses
- PMT justa (taxa média mercado): ${FinancialEngine.fmt(c.pmt)}/mês
- Total que deveria ser cobrado : ${FinancialEngine.fmt(c.totalCorreto)}
+ Prestação justa (PMT/mês)      : ${FinancialEngine.fmt(c.pmt)}
+ Total correto (PMT × n)        : ${FinancialEngine.fmt(c.totalCorreto)}
 
  APURAÇÃO DO INDÉBITO
  ─────────────────────────────────────────────────────────────
- Total descontado              : ${FinancialEngine.fmt(c.total)}
- Total correto (taxa mercado)  : ${FinancialEngine.fmt(c.totalCorreto)}
- Excesso cobrado               : ${FinancialEngine.fmt(c.excesso)}
- Repetição em dobro (art. 42) : ${FinancialEngine.fmt(c.dobro)}
+ Total descontado do extrato    : ${FinancialEngine.fmt(c.total)}
+ (−) Total correto (PMT × n)    : ${FinancialEngine.fmt(c.totalCorreto)}
+ ─────────────────────────────────────────────────────────────
+ (=) EXCESSO COBRADO            : ${FinancialEngine.fmt(c.excesso)}
+ Repetição em dobro (art. 42)  : ${FinancialEngine.fmt(c.dobro)}
 
  BASE LEGAL
  ─────────────────────────────────────────────────────────────
@@ -2118,7 +2172,7 @@ function gerarFundamentoConsignado(){
  • Fórmula Price (PMT): mesma da Calculadora do Cidadão BACEN (bcb.gov.br)
  • Repetição em dobro: art. 42, parágrafo único, CDC (Lei nº 8.078/1990)
  • Cobrança indevida RMC/RCC: art. 39, III e VI, CDC; Res. BACEN 3.694/2009
- • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3`;
+ • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3.3`;
 }
 
 /** Copia o texto de fundamento para a área de transferência */
@@ -2140,6 +2194,115 @@ function copiarFundamento(txtId,btnId){
     btn.textContent='✓ Copiado!'; btn.classList.add('copiado');
     setTimeout(()=>{btn.textContent='📋 Copiar Texto';btn.classList.remove('copiado');},2500);
   });
+}
+
+/** Gera PDF do Sistema de Apuração com layout LAADV
+ *  tipo = 'calculo' | 'consignado' */
+function gerarFundamentoPDF(tipo){
+  if(!window.jspdf||!window.jspdf.jsPDF){alert('jsPDF não carregado. Verifique sua conexão.');return;}
+  const {jsPDF}=window.jspdf;
+  const isConsig=(tipo==='consignado');
+  const txtId=isConsig?'tm-fundamento-txt':'r-fundamento-txt';
+  const texto=document.getElementById(txtId).textContent||'';
+  if(!texto||texto==='—'){alert('Execute o cálculo primeiro para gerar o PDF.');return;}
+  const titulo=isConsig
+    ?'SISTEMA DE APURAÇÃO — CRÉDITO CONSIGNADO (TAXA MÉDIA BACEN)'
+    :'SISTEMA DE APURAÇÃO — CÁLCULO JURÍDICO-FINANCEIRO';
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const pW=doc.internal.pageSize.getWidth();   // 210mm
+  const pH=doc.internal.pageSize.getHeight();  // 297mm
+  const mL=14, mR=14, mB=18;
+  const contentW=pW-mL-mR;
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  // ── Paleta ──
+  const TEAL=[11,74,68], GOLD=[201,169,62], WHITE=[255,255,255], MUTED=[107,123,122], DARK=[26,43,42];
+  // ── Função de header por página ──
+  function drawHeader(isFirst){
+    const hH=isFirst?40:14;
+    doc.setFillColor(...TEAL);
+    doc.rect(0,0,pW,hH,'F');
+    // Faixa ouro
+    doc.setFillColor(...GOLD);
+    doc.rect(0,hH,pW,1.5,'F');
+    if(isFirst){
+      // Logotipo / título
+      doc.setTextColor(...WHITE);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(13);
+      doc.text('LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro',mL,12);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...GOLD);
+      doc.text('AKE/UFT-1.0 · Sistema de Apuração Formal para Impugnação · v1.3.3',mL,20);
+      doc.setTextColor(...WHITE);
+      doc.setFontSize(8);
+      doc.text(titulo,mL,28);
+      // Data (direita)
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7.5);
+      doc.text('Emitido em: '+hoje,pW-mR,12,{align:'right'});
+      // Linha divisória ouro (interna)
+      doc.setFillColor(...GOLD);
+      doc.rect(mL,34,contentW,0.4,'F');
+      doc.setTextColor(...WHITE);
+      doc.setFontSize(7);
+      doc.text('Documento gerado automaticamente pelo sistema LAADV — uso exclusivo para fins jurídicos.',mL,38);
+    } else {
+      doc.setTextColor(...WHITE);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.text('LAADV — Sistema de Apuração (continuação)',mL,9);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...GOLD);
+      doc.text(titulo,pW-mR,9,{align:'right'});
+    }
+  }
+  // ── Função de footer ──
+  function drawFooter(pageNum,totalPages){
+    doc.setFillColor(...GOLD);
+    doc.rect(0,pH-13,pW,0.5,'F');
+    doc.setFillColor(245,247,249);
+    doc.rect(0,pH-12.5,pW,12.5,'F');
+    doc.setTextColor(...MUTED);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(6.5);
+    doc.text('LAADV · AKE/UFT-1.0 · v1.3.3 · Plataforma Axiomática de Cálculo Jurídico-Financeiro',mL,pH-6);
+    doc.text(`Página ${pageNum} de ${totalPages} · Emitido em ${hoje}`,pW-mR,pH-6,{align:'right'});
+  }
+  // ── Renderizar texto ──
+  drawHeader(true);
+  doc.setFont('courier','normal');
+  doc.setFontSize(7.8);
+  doc.setTextColor(...DARK);
+  const lines=doc.splitTextToSize(texto,contentW);
+  let y=48;   // y inicial (abaixo do header primeira página)
+  const lineH=4.2;
+  const yMax=pH-mB-6;  // limite inferior (acima do footer)
+  let pageNum=1;
+  for(let i=0;i<lines.length;i++){
+    if(y+lineH>yMax){
+      pageNum++;
+      doc.addPage();
+      drawHeader(false);
+      doc.setFont('courier','normal');
+      doc.setFontSize(7.8);
+      doc.setTextColor(...DARK);
+      y=22;
+    }
+    doc.text(lines[i],mL,y);
+    y+=lineH;
+  }
+  // ── Rodapé em todas as páginas ──
+  const totalPages=doc.internal.getNumberOfPages();
+  for(let p=1;p<=totalPages;p++){
+    doc.setPage(p);
+    drawFooter(p,totalPages);
+  }
+  // ── Salvar ──
+  const dateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const tipoLabel=isConsig?'CONSIGNADO':'JURIDICO';
+  doc.save(`LAADV_Sistema_Apuracao_${tipoLabel}_${dateStr}.pdf`);
 }
 
 /** Mostra/oculta campo de taxa manual quando mora=MANUAL_TAXA
