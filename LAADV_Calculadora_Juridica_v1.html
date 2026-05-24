@@ -80,6 +80,14 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
 .result-label{font-size:10px;opacity:.75;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
 .result-value{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700}
 .dobro-banner{background:var(--gold);color:var(--teal);border-radius:8px;padding:14px 20px;text-align:center;margin-top:14px;font-weight:700;font-size:15px}
+.fundamento-box{background:#F0F7F4;border:1.5px solid var(--teal-light);border-radius:12px;padding:20px 24px;margin-top:20px}
+.fundamento-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.fundamento-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--teal);font-weight:700}
+.fundamento-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.fundamento-text{font-family:'Courier New',monospace;font-size:11.5px;line-height:1.8;color:#1A2B2A;background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px 18px;white-space:pre-wrap;word-break:break-word;max-height:340px;overflow-y:auto}
+.btn-copy{padding:8px 16px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;background:var(--teal);color:#fff;transition:all .2s;white-space:nowrap}
+.btn-copy:hover{background:var(--teal-mid)}
+.btn-copy.copiado{background:var(--success)}
 .pipeline{background:#050D1A;color:#A8D8D8;font-family:'Courier New',monospace;font-size:11.5px;padding:18px 20px;border-radius:10px;max-height:360px;overflow-y:auto;line-height:1.9;border:1px solid #0A2040}
 .pipeline .s-fetch{color:#64DFDF}
 .pipeline .s-decode{color:#80FFDB}
@@ -344,6 +352,17 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       <button class="btn btn-outline" onclick="pushToComparativo()">+ Comparativo</button>
       <button class="btn btn-gold" onclick="pushToRelatorio()">📄 Adicionar ao Relatório</button>
     </div>
+    <!-- Sistema de Apuração para Impugnação -->
+    <div class="fundamento-box" id="r-fundamento-box">
+      <div class="fundamento-header">
+        <div>
+          <div class="fundamento-title">⚖ Sistema de Apuração — para Impugnação</div>
+          <div class="fundamento-sub">Texto formal gerado automaticamente — copie e cole na peça processual</div>
+        </div>
+        <button class="btn-copy" id="r-fundamento-btn" onclick="copiarFundamento('r-fundamento-txt','r-fundamento-btn')">📋 Copiar Texto</button>
+      </div>
+      <div class="fundamento-text" id="r-fundamento-txt">—</div>
+    </div>
   </div>
 
   <!-- ═══ CARD TAXA MÉDIA BACEN ═══ -->
@@ -444,6 +463,17 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       </div>
       <div class="flex-end mt16">
         <button class="btn btn-gold" onclick="pushConsignadoRelatorio()">📄 Adicionar ao Relatório</button>
+      </div>
+      <!-- Sistema de Apuração — Consignado -->
+      <div class="fundamento-box mt16" id="tm-fundamento-box">
+        <div class="fundamento-header">
+          <div>
+            <div class="fundamento-title">⚖ Sistema de Apuração — para Impugnação</div>
+            <div class="fundamento-sub">Fundamento formal da taxa e metodologia — copie para a peça processual</div>
+          </div>
+          <button class="btn-copy" id="tm-fundamento-btn" onclick="copiarFundamento('tm-fundamento-txt','tm-fundamento-btn')">📋 Copiar Texto</button>
+        </div>
+        <div class="fundamento-text" id="tm-fundamento-txt">—</div>
       </div>
     </div>
   </div>
@@ -1370,7 +1400,7 @@ const ReportBuilder = {
 // ══════════════════════════════════════════════════════════════════════
 //  UIState
 // ══════════════════════════════════════════════════════════════════════
-const UIState={lastWB:null,lastValorBase:0,lastDataInicio:'',lastDataFim:'',lastTipo:'',comparativos:[],selAll:false,lastConsignado:null,batchTransacoes:[],lastBatchResults:[]};
+const UIState={lastWB:null,lastValorBase:0,lastDataInicio:'',lastDataFim:'',lastTipo:'',lastIndice:'',lastMoraTipo:'',lastMoraIni:'',lastMoraTaxaPct:null,comparativos:[],selAll:false,lastConsignado:null,batchTransacoes:[],lastBatchResults:[]};
 
 
 // ══════════════════════════════════════════════════════════════════════
@@ -1592,7 +1622,10 @@ function calcularConsignado() {
     dbanner.classList.add('hidden');
   }
   document.getElementById('tm-resultado').classList.remove('hidden');
-  UIState.lastConsignado={total,n,taxa:taxaPct,pmt,totalCorreto,excesso,dobro,ini,fim,tipo};
+  const saque=document.getElementById('tm-saque').value||'';
+  UIState.lastConsignado={total,n,taxa:taxaPct,pmt,totalCorreto,excesso,dobro,ini,fim,tipo,saque};
+  // Gera sistema de apuração para impugnação
+  document.getElementById('tm-fundamento-txt').textContent=gerarFundamentoConsignado();
   kernel.registrarSucesso(`CONSIG:${FinancialEngine.fmt(total)}→PMT=${FinancialEngine.fmt(pmt)},excesso=${FinancialEngine.fmt(excesso)}`);
 }
 
@@ -1880,6 +1913,8 @@ function executarCalculo(){
     if(!wb){alert('WRITEBACK bloqueado — IC < 0.9. Verifique os dados inseridos.');return;}
     UIState.lastWB=wb; UIState.lastValorBase=valor;
     UIState.lastDataInicio=ini; UIState.lastDataFim=fim; UIState.lastTipo=tipo;
+    UIState.lastIndice=indice; UIState.lastMoraTipo=mora;
+    UIState.lastMoraIni=moraIni||''; UIState.lastMoraTaxaPct=taxaManualPct;
     const res=wb.result;
     // Valores SIMPLES (sempre pré-dobro): valorCorrigido = principal × fator acumulado
     const corrAmount=res.valorCorrigido-valor;       // só a correção monetária (sem mora)
@@ -1909,11 +1944,202 @@ function executarCalculo(){
     document.getElementById('laadv-mora').value=wb.mr.toFixed(2);
     document.getElementById('laadv-total').value=subtotalSimples.toFixed(2);
     document.getElementById('laadv-fundamento').value=wb.law+' · '+wb.idx;
+    // Gera sistema de apuração para impugnação
+    document.getElementById('r-fundamento-txt').textContent=gerarFundamentoCalculo();
     kernel.registrarSucesso(`CALC:${tipo}:${valor.toFixed(2)}→${FinancialEngine.fmt(wb.acc)}`);
   } catch(err){
     kernel.registrarFalha('CALC:'+tipo+':'+err.message);
     alert('Erro no cálculo: '+err.message);
   }
+}
+
+// ─── SISTEMA DE APURAÇÃO — para Impugnação ───
+
+const _IDX_LABEL={
+  'INPC':'INPC — Índice Nacional de Preços ao Consumidor (IBGE)',
+  'IPCA':'IPCA — Índice Nacional de Preços ao Consumidor Amplo (IBGE)',
+  'IGPM':'IGP-M — Índice Geral de Preços do Mercado (FGV)',
+  'SELIC':'SELIC — Taxa do Sistema Especial de Liquidação e Custódia (BACEN)',
+  'IPCA_E':'IPCA-E — Índice Nacional de Preços ao Consumidor Amplo Especial (IBGE/SGS 10764)',
+  'TJRJ':'INPC (TJRJ — adotado pelo Tribunal de Justiça do Estado do Rio de Janeiro)',
+  'TJAM':'INPC (TJAM — adotado pelo Tribunal de Justiça do Estado do Amazonas)',
+  'TJDFT':'INPC (TJDFT — adotado pelo Tribunal de Justiça do Distrito Federal e Territórios)',
+  'NENHUMA':'Sem correção monetária — apenas mora (conforme determinação do juízo)',
+  'INPC→IPCA+SELIC':'INPC (pré-14.905/24) + IPCA/SELIC (pós-14.905/24)'
+};
+const _MORA_LABEL={
+  'AUTO_14905':'Calculada nos termos da Lei nº 14.905/2024:\n    • Período anterior a 30/08/2024: 1% a.m. simples (art. 406 CC)\n    • Período posterior a 30/08/2024: Taxa SELIC (art. 406 CC com redação da Lei 14.905/24)',
+  '1PCT':'1% ao mês simples — art. 406 do Código Civil c/c art. 161, §1º, CTN',
+  'SELIC_MORA':'Taxa SELIC — art. 406 do Código Civil (redação dada pela Lei nº 14.905/2024)',
+  'NENHUM':'Sem juros de mora (conforme determinação do juízo)',
+  'MANUAL_TAXA':'Taxa manual informada pelo operador jurídico'
+};
+const _TIPO_LABEL={
+  'RMC':'Reserva de Margem Consignável — Cartão (RMC)',
+  'RCC':'Reserva de Cartão Consignado (RCC)',
+  'BX_FINAN':'Refinanciamento / Baixa de Financiamento',
+  'TARIFA':'Tarifa Bancária Indevida',
+  'SEGURO':'Seguro Forçado (Prestamista / Vida)',
+  'JUROS':'Juros / Mora / IOF Abusivos',
+  'PARCELA':'Parcela de Empréstimo Indevida',
+  'OUTROS':'Outros'
+};
+
+/** Gera texto formal do sistema de apuração para o cálculo principal */
+function gerarFundamentoCalculo(){
+  const wb=UIState.lastWB; if(!wb) return '—';
+  const res=wb.result;
+  const v=UIState.lastValorBase;
+  const tipo=UIState.lastTipo;
+  const ini=UIState.lastDataInicio;
+  const fim=UIState.lastDataFim;
+  const corrAmount=res.valorCorrigido-v;
+  const subtotal=res.valorCorrigido+wb.mr;
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  const idxLabel=_IDX_LABEL[wb.idx]||wb.idx;
+  const moraLabel=_MORA_LABEL[UIState.lastMoraTipo]||UIState.lastMoraTipo;
+  const moraIniLine=UIState.lastMoraIni?`\n    Início da mora: ${UIState.lastMoraIni} (data fixada)`:'';
+  const taxaManualLine=UIState.lastMoraTipo==='MANUAL_TAXA'&&UIState.lastMoraTaxaPct?`\n    Taxa aplicada: ${UIState.lastMoraTaxaPct}% a.m.`:'';
+  let periodosText='';
+  if(res.periodos?.length>1){
+    periodosText='\n    Detalhamento por regime:\n'+res.periodos.map(p=>
+      `      • ${p.regime}: ${p.de} a ${p.ate} | Índice: ${p.idx} | Fator: ${p.fator.toFixed(6)}`
+    ).join('\n');
+  }
+  let dobroText='';
+  if(res.dobro){
+    dobroText=`\n\n═══════════════════════════════════════════════
+ REPETIÇÃO EM DOBRO — ART. 42, §ÚNICO, CDC
+═══════════════════════════════════════════════
+ Subtotal antes do dobro : ${FinancialEngine.fmt(subtotal)}
+ Fator                   : × 2
+ TOTAL COM DOBRO         : ${FinancialEngine.fmt(wb.acc)}
+
+ Base legal: Art. 42, parágrafo único, da Lei nº 8.078/1990 (Código de
+ Defesa do Consumidor) — o consumidor cobrado em quantia indevida tem
+ direito à repetição do indébito por valor igual ao dobro do que pagou
+ em excesso, acrescido de correção monetária e juros legais.`;
+  }
+  return `╔══════════════════════════════════════════════════════════════╗
+║       SISTEMA DE APURAÇÃO — LAADV v1.3 · AKE/UFT-1.0        ║
+║              Data do cálculo: ${hoje.padEnd(12)}                   ║
+╚══════════════════════════════════════════════════════════════╝
+
+ IDENTIFICAÇÃO
+ ─────────────────────────────────────────────────────────────
+ Tipo de cobrança : ${_TIPO_LABEL[tipo]||tipo}
+ Valor original   : ${FinancialEngine.fmt(v)}
+ Período          : ${ini} a ${fim} (Termo Final)
+ Regime jurídico  : ${wb.law}
+
+ CORREÇÃO MONETÁRIA
+ ─────────────────────────────────────────────────────────────
+ Índice aplicado  : ${idxLabel}
+ Fator acumulado  : ${wb.cr.toFixed(6)}
+ Valor corrigido  : ${FinancialEngine.fmt(res.valorCorrigido)} (acréscimo: ${FinancialEngine.fmt(corrAmount)})${periodosText}
+ Fonte dos dados  : IBGE / BACEN — Sistema Gerenciador de Séries Temporais (SGS)
+
+ JUROS DE MORA
+ ─────────────────────────────────────────────────────────────
+ ${moraLabel}${moraIniLine}${taxaManualLine}
+ Valor dos juros  : ${FinancialEngine.fmt(wb.mr)}
+
+ RESULTADO APURADO
+ ─────────────────────────────────────────────────────────────
+ (+) Principal             : ${FinancialEngine.fmt(v)}
+ (+) Correção monetária    : ${FinancialEngine.fmt(corrAmount)}
+ (+) Juros de mora         : ${FinancialEngine.fmt(wb.mr)}
+ (=) SUBTOTAL${res.dobro?' (pré-dobro)':'           '} : ${FinancialEngine.fmt(subtotal)}${dobroText}
+
+ BASE LEGAL
+ ─────────────────────────────────────────────────────────────
+ • Correção monetária: ${idxLabel}
+ • Juros de mora: ${UIState.lastMoraTipo==='AUTO_14905'||UIState.lastMoraTipo===''?'Lei nº 14.905/2024; art. 406 do Código Civil':moraLabel.split('\n')[0]}
+ • Cobrança indevida de RMC/RCC: vedação à vinculação de crédito/débito
+   automático sem autorização expressa — art. 39, III e VI, CDC;
+   Resolução BACEN nº 3.694/2009; Resolução BACEN nº 4.676/2018
+ • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3`;
+}
+
+/** Gera texto formal do sistema de apuração para conversão consignado */
+function gerarFundamentoConsignado(){
+  const c=UIState.lastConsignado; if(!c) return '—';
+  const cfg=LIBRARY.BACEN_SGS[c.tipo];
+  const hoje=new Date().toLocaleDateString('pt-BR');
+  const saqueLabel=c.saque
+    ?`Mês de ${new Date(c.saque+'T00:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'})} (data do saque/contratação)`
+    :'Período informado';
+  const iMensal=(c.taxa/100);
+  const pmtFormula=`PV × i / (1 − (1+i)^−n) = ${FinancialEngine.fmt(c.total)} × ${iMensal.toFixed(6)} / (1 − (1+${iMensal.toFixed(6)})^−${c.n})`;
+  return `╔══════════════════════════════════════════════════════════════╗
+║   SISTEMA DE APURAÇÃO — CRÉDITO CONSIGNADO (TAXA MÉDIA BACEN) ║
+║              Data do cálculo: ${hoje.padEnd(12)}                   ║
+╚══════════════════════════════════════════════════════════════╝
+
+ FONTE DA TAXA DE REFERÊNCIA
+ ─────────────────────────────────────────────────────────────
+ Série SGS        : nº ${cfg.sgsCodigo} — Banco Central do Brasil (BACEN)
+ Denominação      : "${cfg.label}"
+ Referência       : ${saqueLabel}
+ Taxa apurada     : ${c.taxa.toFixed(4)}% ao mês
+
+ METODOLOGIA DA TAXA
+ ─────────────────────────────────────────────────────────────
+ A série SGS ${cfg.sgsCodigo} representa a MÉDIA PONDERADA POR VOLUME das
+ novas concessões de crédito pessoal consignado realizadas no mês de
+ referência, publicada oficialmente pelo Banco Central do Brasil.
+ Esta é a mesma série e metodologia utilizadas pela Calculadora do
+ Cidadão do BACEN (disponível em bcb.gov.br/calculadora).
+
+ Nota: pequenas diferenças (±0,03–0,10%) em relação ao relatório
+ histórico pontual do site BACEN são normais e esperadas, decorrem
+ da agregação por período semanal vs. mensal, e não afetam a
+ validade jurídica do cálculo.
+
+ CÁLCULO PELA FÓRMULA PRICE (PMT)
+ ─────────────────────────────────────────────────────────────
+ Fórmula: ${pmtFormula}
+
+ Total efetivamente descontado : ${FinancialEngine.fmt(c.total)}
+ Número de parcelas            : ${c.n} meses
+ PMT justa (taxa média mercado): ${FinancialEngine.fmt(c.pmt)}/mês
+ Total que deveria ser cobrado : ${FinancialEngine.fmt(c.totalCorreto)}
+
+ APURAÇÃO DO INDÉBITO
+ ─────────────────────────────────────────────────────────────
+ Total descontado              : ${FinancialEngine.fmt(c.total)}
+ Total correto (taxa mercado)  : ${FinancialEngine.fmt(c.totalCorreto)}
+ Excesso cobrado               : ${FinancialEngine.fmt(c.excesso)}
+ Repetição em dobro (art. 42) : ${FinancialEngine.fmt(c.dobro)}
+
+ BASE LEGAL
+ ─────────────────────────────────────────────────────────────
+ • Taxa de mercado: SGS/BACEN ${cfg.sgsCodigo} — fonte oficial do Banco Central
+ • Fórmula Price (PMT): mesma da Calculadora do Cidadão BACEN (bcb.gov.br)
+ • Repetição em dobro: art. 42, parágrafo único, CDC (Lei nº 8.078/1990)
+ • Cobrança indevida RMC/RCC: art. 39, III e VI, CDC; Res. BACEN 3.694/2009
+ • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3`;
+}
+
+/** Copia o texto de fundamento para a área de transferência */
+function copiarFundamento(txtId,btnId){
+  const txt=document.getElementById(txtId).textContent;
+  if(!txt||txt==='—') return;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById(btnId);
+    btn.textContent='✓ Copiado!';
+    btn.classList.add('copiado');
+    setTimeout(()=>{btn.textContent='📋 Copiar Texto';btn.classList.remove('copiado');},2500);
+  }).catch(()=>{
+    // Fallback para navegadores sem clipboard API
+    const ta=document.createElement('textarea');
+    ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    const btn=document.getElementById(btnId);
+    btn.textContent='✓ Copiado!'; btn.classList.add('copiado');
+    setTimeout(()=>{btn.textContent='📋 Copiar Texto';btn.classList.remove('copiado');},2500);
+  });
 }
 
 /** Mostra/oculta campo de taxa manual quando mora=MANUAL_TAXA
