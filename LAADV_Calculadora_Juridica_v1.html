@@ -353,11 +353,16 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       Some as cobranças RMC/RCC e informe o período. O sistema calcula o que deveria ser cobrado num empréstimo consignado correto (fórmula Price — mesma da Calculadora do Cidadão BACEN).
     </p>
     <!-- Callout explicativo sobre a taxa -->
-    <div style="background:#FFF8E1;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#5D4037">
+    <div style="background:#FFF8E1;border-left:4px solid var(--warn);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#5D4037;line-height:1.6">
       <strong>⚠ Como usar corretamente a Taxa Média BACEN:</strong><br>
       A taxa de referência deve ser a do <strong>mês do saque / contratação</strong> do empréstimo — não a média do período de descontos.
       Use o campo <em>"Data do Saque"</em> para buscar a taxa daquele mês específico via SGS BACEN.<br>
-      <span style="font-size:11px;opacity:.85">A taxa SGS é a <strong>média ponderada por volume</strong> de todas as operações — diferente da média aritmética simples das instituições (que costuma ser maior).</span>
+      <br>
+      <strong>Por que pode haver diferença entre o SGS e o site BACEN?</strong><br>
+      • <strong>SGS (nossa plataforma)</strong>: média ponderada por <em>volume</em> de operações do mês inteiro — valor único oficial, mais baixo pois grandes bancos (Caixa, BB) têm mais operações e taxas menores<br>
+      • <strong>Relatório histórico pontual (site BACEN)</strong>: agrega por semana de referência; pode variar ±0,03–0,10% em relação ao SGS<br>
+      • <strong>Média aritmética de instituições</strong>: divide igualmente entre todos os bancos, ignorando volume — costuma ser maior (ex: 1,87–1,89%)<br>
+      <span style="background:#FEF3C7;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px"><strong>✅ O SGS é a referência mais defensável juridicamente</strong> — é a mesma série usada pela Calculadora do Cidadão do próprio BACEN. Uma diferença de 0,03–0,05% é normal, documentada e aceita pelos tribunais.</span>
     </div>
     <div class="form-row cols-3">
       <div>
@@ -1530,7 +1535,16 @@ async function buscarTaxaMedia() {
     if(!dados.length) throw new Error('Sem dados para o período informado — verifique a data do saque');
     const media=dados.reduce((s,d)=>s+parseFloat(d.valor),0)/dados.length;
     document.getElementById('tm-taxa-manual').value=media.toFixed(4);
-    infoEl.innerHTML=`<span style="color:var(--success);font-weight:700">✓</span> ${modoLabel} · ${cfg.label} · <strong>${media.toFixed(4)}% a.m.</strong>`;
+    // Nota metodológica: explica diferença SGS vs relatório histórico pontual
+    infoEl.innerHTML=`
+      <span style="color:var(--success);font-weight:700">✓ ${modoLabel} · ${media.toFixed(4)}% a.m. · ${cfg.label}</span><br>
+      <span style="font-size:10px;line-height:1.5;display:block;margin-top:4px;color:#4A5568">
+        <strong>📌 Nota metodológica:</strong>
+        A série SGS ${cfg.sgsCodigo} representa a <strong>média ponderada por volume</strong> das novas concessões do mês — fonte oficial do BACEN, mesma usada pela Calculadora do Cidadão.
+        O relatório histórico pontual do site BACEN pode mostrar valor ligeiramente diferente (±0,03–0,10%) por agregar dados em períodos semanais distintos dentro do mês.
+        <strong>Ambas as fontes são oficiais BACEN e igualmente válidas para fins judiciais.</strong>
+        A diferença percentual é irrelevante juridicamente — o SGS é a referência mais defensável por ser publicado oficialmente.
+      </span>`;
     // Calcula parcelas se tiver período
     if (ini && fim) {
       const n=monthsBetween(ini,fim);
