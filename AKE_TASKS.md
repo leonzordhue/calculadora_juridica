@@ -172,16 +172,16 @@ O `PetitionEngine` atual suporta apenas "Cumprimento de Sentença — RMC/RCC". 
 
 ### Critério de Aceite
 - [ ] Dropdown `pet-tipo-peca` adicionado, muda o template renderizado
-- [ ] Template Petição Inicial completo com todos os blocos
+- [x] Template Petição Inicial completo com todos os blocos
 - [ ] Export PDF e RTF funcionam para o novo template
-- [ ] Pré-visualização HTML correta
+- [x] Pré-visualização HTML correta
 - [ ] Campos específicos da PI visíveis apenas quando PI selecionada (show/hide)
 - [ ] PR aberto contra `main`
 
 ### Status de Execução
-- [ ] Estrutura do template definida
+- [x] Estrutura do template definida
 - [ ] Novos campos adicionados ao formulário
-- [ ] RENDER_HTML e RENDER_TEXT implementados para PI
+- [x] RENDER_HTML e RENDER_TEXT implementados para PI
 - [ ] Testado PDF e RTF
 - [ ] PR aberto contra `main`
 
