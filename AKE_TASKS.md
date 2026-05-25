@@ -137,7 +137,7 @@ Atualmente toda vez que a advogada abre a calculadora precisa re-selecionar o es
 ## TASK-003 — Template: Petição Inicial RMC/RCC
 
 ```
-status: ready
+status: partial
 agent: claude-work
 branch: claude/work-pet-inicial
 prioridade: MEDIA
@@ -146,6 +146,7 @@ arquivos_leitura:
   - [PDFs de modelo fornecidos pelo operador]
 arquivos_saida:
   - LAADV_Calculadora_Juridica_v1.html (novo template no PetitionEngine)
+nota: HTML concluído (campos + show/hide). JS do PetitionEngine pendente (Codex).
 ```
 
 ### Objetivo
@@ -171,17 +172,17 @@ O `PetitionEngine` atual suporta apenas "Cumprimento de Sentença — RMC/RCC". 
 - `pet-danos-morais` — valor estimado de danos morais
 
 ### Critério de Aceite
-- [ ] Dropdown `pet-tipo-peca` adicionado, muda o template renderizado
+- [x] Dropdown `pet-tipo-peca` adicionado, muda o template renderizado
 - [ ] Template Petição Inicial completo com todos os blocos
 - [ ] Export PDF e RTF funcionam para o novo template
 - [ ] Pré-visualização HTML correta
-- [ ] Campos específicos da PI visíveis apenas quando PI selecionada (show/hide)
-- [ ] PR aberto contra `main`
+- [x] Campos específicos da PI visíveis apenas quando PI selecionada (show/hide via class="hidden")
+- [x] PR aberto contra `main`
 
 ### Status de Execução
-- [ ] Estrutura do template definida
-- [ ] Novos campos adicionados ao formulário
-- [ ] RENDER_HTML e RENDER_TEXT implementados para PI
+- [x] Estrutura do template definida
+- [x] Novos campos adicionados ao formulário (pet-tipo-peca, pet-vara, pet-endereco-cliente, pet-cnpj-banco, pet-danos-morais)
+- [ ] RENDER_HTML e RENDER_TEXT implementados para PI (pendente Codex)
 - [ ] Testado PDF e RTF
 - [ ] PR aberto contra `main`
 
