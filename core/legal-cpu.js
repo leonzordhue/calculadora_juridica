@@ -205,7 +205,7 @@ async function buscarTaxaMedia() {
   } catch(err) {
     infoEl.textContent='';
     alert('Não foi possível buscar do BACEN: '+err.message+'\n\nInsira a taxa manualmente ou use o botão "Abrir BACEN" para consultar o site.');
-    kernel.registrarBuild('BACEN_ERR',err.message);
+    kernel.registrarErroCalculo('BACEN',err.message);
   }
 }
 
@@ -260,6 +260,7 @@ function calcularConsignado() {
   } else {
     dbanner.classList.add('hidden');
   }
+  try{ kernel.assertIC('WRITEBACK:CONSIG'); }catch(e){ kernel.exibirBloqueioIC(e,'tm-resultado');return; }
   document.getElementById('tm-resultado').classList.remove('hidden');
   // Salva estado para relatório e fundamento
   UIState.lastConsignado={
@@ -542,6 +543,7 @@ function executarCalculo(){
       db.classList.remove('hidden');
     } else db.classList.add('hidden');
     document.getElementById('pipeline-out').innerHTML=cpu.renderTrace();
+    try{ kernel.assertIC('WRITEBACK:CALC'); }catch(e){ kernel.exibirBloqueioIC(e,'calc-res');return; }
     document.getElementById('calc-res').classList.remove('hidden');
     const traceDetails=document.getElementById('trace-details');
     if(traceDetails){ traceDetails.open=false; }
@@ -555,7 +557,7 @@ function executarCalculo(){
     document.getElementById('r-fundamento-txt').textContent=gerarFundamentoCalculo();
     kernel.registrarSucesso(`CALC:${tipo}:${valor.toFixed(2)}→${FinancialEngine.fmt(wb.acc)}`);
   } catch(err){
-    kernel.registrarFalha('CALC:'+tipo+':'+err.message);
+    kernel.registrarErroCalculo('CALC',tipo+':'+err.message);
     alert('Erro no cálculo: '+err.message);
   }
 }
