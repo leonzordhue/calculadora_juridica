@@ -774,6 +774,41 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       Preencha o formulário abaixo. Use <strong>⚡ Importar do LAADV</strong> para trazer automaticamente os valores calculados. Gere o PDF ou exporte para Word (RTF) para assinatura e protocolo.
     </p>
 
+    <!-- Bloco A — Tipo de peça + Vara -->
+    <div class="form-row cols-2">
+      <div>
+        <label>Tipo de Peça</label>
+        <select id="pet-tipo-peca" onchange="toggleCamposPeca(this.value)">
+          <option value="cumprimento">Cumprimento de Sentença — RMC/RCC</option>
+          <option value="inicial">Petição Inicial — RMC/RCC</option>
+        </select>
+      </div>
+      <div>
+        <label>Número da Vara</label>
+        <input type="text" id="pet-vara" placeholder="Ex: 3ª">
+      </div>
+    </div>
+
+    <!-- Bloco B — Campos exclusivos da Petição Inicial -->
+    <div id="campos-pet-inicial" class="hidden">
+      <div class="form-row cols-1">
+        <div>
+          <label>Endereço Completo do Cliente</label>
+          <input type="text" id="pet-endereco-cliente" placeholder="Rua, número, bairro, cidade, CEP">
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div>
+          <label>CNPJ do Banco Réu</label>
+          <input type="text" id="pet-cnpj-banco" placeholder="00.000.000/0000-00">
+        </div>
+        <div>
+          <label>Danos Morais Estimados (R$)</label>
+          <input type="number" id="pet-danos-morais" step="0.01" min="0" placeholder="0,00">
+        </div>
+      </div>
+    </div>
+
     <!-- Seleção de Escritório -->
     <div class="pet-section">
       <div class="pet-section-title">🏛 Escritório / Template</div>
@@ -815,14 +850,10 @@ details[open] #trace-arrow{transform:rotate(90deg)}
     <!-- Seção Processo -->
     <div class="pet-section">
       <div class="pet-section-title">⚖ Dados do Processo</div>
-      <div class="form-row cols-3">
+      <div class="form-row cols-2">
         <div>
           <label>Número do Processo</label>
           <input type="text" id="pet-processo" placeholder="0000000-00.0000.0.00.0000">
-        </div>
-        <div>
-          <label>Vara</label>
-          <input type="text" id="pet-vara" placeholder="Ex: VARA CIVEL ou 1ª VARA CIVEL">
         </div>
         <div>
           <label>Comarca / UF</label>
