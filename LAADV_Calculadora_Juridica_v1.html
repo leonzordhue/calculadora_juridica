@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.6.0</title>
+<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.7.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
@@ -203,7 +203,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 <div class="header">
   <div>
     <div class="hd-title">LAADV — Plataforma Axiomática</div>
-    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.6.0</div>
+    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.7.0</div>
   </div>
   <div class="hd-right">
     <span class="q-chip" id="header-q">Q=—</span>
@@ -819,6 +819,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
         <select id="pet-tipo-peca" onchange="toggleCamposPeca(this.value)">
           <option value="cumprimento">Cumprimento de Sentença — RMC/RCC</option>
           <option value="inicial">Petição Inicial — RMC/RCC</option>
+          <option value="impugnacao">Impugnação ao Cumprimento de Sentença</option>
         </select>
       </div>
       <div>
@@ -1463,7 +1464,7 @@ const PerfilStorage=(function(){
   document.getElementById('pet-data-assina').value=hoje;
   if(!PerfilStorage.carregar()) selecionarEscritorio('LAADV');
   PerfilStorage.iniciarListeners();
-  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.6.0');
+  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.7.0');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
   kernel.registrarBuild('PARSER','BradescoParser + INSSParser · detectarTipo() automático');

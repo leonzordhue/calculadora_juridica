@@ -49,6 +49,113 @@ function dataExtenso(dateStr){
   return `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+//  TASK-004 — Impugnação ao Cumprimento de Sentença
+//  AKE/UFT-1.0 | BUILD: LAADV-20260524 | IC: 1.0
+// ══════════════════════════════════════════════════════════════════════
+function renderImpugnacaoHTML(d){
+  const fmt=FinancialEngine.fmt.bind(FinancialEngine);
+  const fmtExt=(v)=>`R$ ${fmt(v)} (${numExtenso(v)})`;
+  const dAssina=d.data_assina?dataExtenso(d.data_assina):dataExtenso(new Date().toISOString().slice(0,10));
+  const dataApurFmt=d.data_apuracao?new Date(d.data_apuracao+'T00:00:00').toLocaleDateString('pt-BR'):'';
+  return `
+<p class="pet-destino">EXMO(A). SR(A). JUIZ(A) DA ${d.vara} VARA CÍVEL DA COMARCA DE ${d.cidadeComarca}</p>
+<p class="pet-processo">Processo n. ${d.processo}</p>
+<p class="pet-p"><strong>IMPUGNANTE:</strong> ${d.bancoReu}</p>
+<p class="pet-p"><strong>IMPUGNAD${d.pronome_a.toUpperCase()}:</strong> ${d.autor}</p>
+
+<p class="pet-secao">I — DA IMPUGNAÇÃO</p>
+<p class="pet-p">A parte Impugnante vem, respeitosamente, impugnar o cumprimento de sentença apresentado, pelos fundamentos a seguir expostos, requerendo a adequação dos valores ao cálculo técnico que ora acompanha esta peça.</p>
+
+<p class="pet-secao">II — DO SISTEMA DE APURAÇÃO</p>
+<p class="pet-p">O sistema LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro procedeu à apuração técnica dos valores, com data-base em <strong>${dataApurFmt}</strong>, chegando ao seguinte resultado:</p>
+<div class="pet-tabwrap">
+  <table class="pet-table">
+    <tr><th>Item</th><th>Valor</th></tr>
+    <tr><td>Total descontado do extrato</td><td>${fmtExt(d.totalDesc)}</td></tr>
+    <tr><td>Valor a compensar (crédito concedido)</td><td>${fmtExt(d.valorComp)}</td></tr>
+    <tr><td>Indébito material apurado</td><td>${fmtExt(d.matSimples)}</td></tr>
+    <tr><td>Danos materiais atualizados</td><td>${fmtExt(d.danosMat)}</td></tr>
+  </table>
+</div>
+<p class="pet-p">A memória de cálculo completa, gerada pela plataforma LAADV com indicação dos índices, períodos e metodologia aplicados, segue em anexo à presente impugnação.</p>
+
+<p class="pet-secao">III — DA METODOLOGIA ADOTADA</p>
+<p class="pet-p">O cálculo foi elaborado com estrita observância dos critérios legais e técnicos vigentes:</p>
+<div class="pet-pedidos">
+  <p>a) <strong>Índice de correção monetária:</strong> INPC + 1% a.m. para o período anterior a 30/08/2024; IPCA + SELIC para o período posterior, nos termos da Lei n. 14.905/2024;</p>
+  <p>b) <strong>Taxa de juros:</strong> média do segmento correspondente, série SGS do Banco Central do Brasil — mesma utilizada pela Calculadora do Cidadão BACEN, igualmente válida para fins judiciais;</p>
+  <p>c) <strong>Fórmula de amortização:</strong> Sistema Price (PMT = PV × i / (1 − (1+i)^−n)), com PV equivalente ao valor efetivamente creditado à parte Executada, conforme contrato;</p>
+  <p>d) <strong>Indébito:</strong> diferença entre o total descontado do extrato e o valor correto apurado pela fórmula Price, representando o excesso cobrado indevidamente.</p>
+</div>
+
+<p class="pet-secao">IV — DO PEDIDO</p>
+<div class="pet-pedidos">
+  <p>a) O acolhimento da presente Impugnação, com a adequação dos valores executados ao cálculo técnico ora apresentado, no montante de <strong>${fmtExt(d.danosMat)}</strong>;</p>
+  <p>b) A intimação da parte Exequente para manifestar-se sobre o cálculo apresentado, no prazo legal;</p>
+  <p>c) A determinação de elaboração de laudo pericial contábil, caso as partes não cheguem a consenso sobre os valores, com indicação do sistema de apuração LAADV como método de referência;</p>
+  <p>d) A condenação d${d.pronome_a} Exequent${d.pronome_a} ao pagamento das custas processuais decorrentes da impugnação, caso acolhida.</p>
+</div>
+<p style="text-align:center;margin-bottom:20px">Nestes termos, pede deferimento.</p>
+<p style="text-align:center;margin-bottom:24px">${d.cidade}, ${dAssina}.</p>
+<div class="pet-assinatura">
+  ${d.adv_nome}<br>
+  ADVOGADO<br>
+  ${d.adv_oab_assina}
+</div>`;
+}
+
+function renderImpugnacaoTEXT(d){
+  const fmt=FinancialEngine.fmt.bind(FinancialEngine);
+  const fmtExt=(v)=>`R$ ${fmt(v)} (${numExtenso(v)})`;
+  const dAssina=d.data_assina?dataExtenso(d.data_assina):dataExtenso(new Date().toISOString().slice(0,10));
+  const dataApurFmt=d.data_apuracao?new Date(d.data_apuracao+'T00:00:00').toLocaleDateString('pt-BR'):'';
+  return [
+    `EXMO(A). SR(A). JUIZ(A) DA ${d.vara} VARA CÍVEL DA COMARCA DE ${d.cidadeComarca}`,
+    '',
+    `Processo n. ${d.processo}`,
+    `IMPUGNANTE: ${d.bancoReu}`,
+    `IMPUGNAD${d.pronome_a.toUpperCase()}: ${d.autor}`,
+    '',
+    'I — DA IMPUGNAÇÃO',
+    '',
+    'A parte Impugnante vem, respeitosamente, impugnar o cumprimento de sentença apresentado, pelos fundamentos a seguir expostos, requerendo a adequação dos valores ao cálculo técnico que ora acompanha esta peça.',
+    '',
+    'II — DO SISTEMA DE APURAÇÃO',
+    '',
+    `O sistema LAADV procedeu à apuração técnica dos valores, com data-base em ${dataApurFmt}, chegando ao seguinte resultado:`,
+    '',
+    `   Total descontado do extrato ........... ${fmtExt(d.totalDesc)}`,
+    `   Valor a compensar (crédito concedido) . ${fmtExt(d.valorComp)}`,
+    `   Indébito material apurado ............. ${fmtExt(d.matSimples)}`,
+    `   Danos materiais atualizados ........... ${fmtExt(d.danosMat)}`,
+    '',
+    'A memória de cálculo completa segue em anexo.',
+    '',
+    'III — DA METODOLOGIA ADOTADA',
+    '',
+    'a) Correção monetária: INPC+1%a.m. até 30/08/2024; IPCA+SELIC após (Lei n. 14.905/2024);',
+    'b) Taxa de juros: média SGS BACEN — mesma da Calculadora do Cidadão, válida judicialmente;',
+    'c) Fórmula Price: PMT = PV × i / (1 − (1+i)^−n), PV = valor efetivamente creditado;',
+    'd) Indébito: excesso entre total descontado e valor correto pela fórmula Price.',
+    '',
+    'IV — DO PEDIDO',
+    '',
+    `a) Acolhimento da Impugnação, com adequação dos valores ao montante de ${fmtExt(d.danosMat)};`,
+    'b) Intimação da Exequente para manifestar-se sobre o cálculo, no prazo legal;',
+    'c) Determinação de perícia contábil, se necessário, adotando a metodologia LAADV como referência;',
+    `d) Condenação d${d.pronome_a} Exequent${d.pronome_a} às custas decorrentes da impugnação, se acolhida.`,
+    '',
+    'Nestes termos, pede deferimento.',
+    '',
+    `${d.cidade}, ${dAssina}.`,
+    '',
+    d.adv_nome,
+    'ADVOGADO',
+    d.adv_oab_assina
+  ].join('\n');
+}
+
 function renderPeticaoInicialHTML(d){
   const fmt=FinancialEngine.fmt.bind(FinancialEngine);
   const fmtExt=(v)=>`R$ ${fmt(v)} (${numExtenso(v)})`;
@@ -231,16 +338,22 @@ const PetitionEngine={
     ];
     const missing=required.filter(([v])=>!v||v===0).map(([,l])=>l);
     if(d.tipoPeca==='inicial'){
-      if(!d.vara) missing.push('Número da Vara');
-      if(!d.enderecoCliente) missing.push('Endereço do cliente');
-      if(!d.cnpjBanco) missing.push('CNPJ do banco réu');
+      if(!d.vara)             missing.push('Número da Vara');
+      if(!d.enderecoCliente)  missing.push('Endereço do cliente');
+      if(!d.cnpjBanco)        missing.push('CNPJ do banco réu');
+    }
+    if(d.tipoPeca==='impugnacao'){
+      if(!d.vara)             missing.push('Número da Vara');
+      if(!d.processo)         missing.push('Número do Processo');
+      if(!d.danosMat)         missing.push('Danos Materiais Atualizados');
     }
     return missing;
   },
 
   /** Gera HTML da petição para preview */
   RENDER_HTML(d){
-    if(d.tipoPeca==='inicial') return renderPeticaoInicialHTML(d);
+    if(d.tipoPeca==='impugnacao') return renderImpugnacaoHTML(d);
+    if(d.tipoPeca==='inicial')    return renderPeticaoInicialHTML(d);
     const fmt=FinancialEngine.fmt.bind(FinancialEngine);
     const ext=numExtenso;
     const fmtExt=(v)=>`R$ ${fmt(v)} (${ext(v)})`;
@@ -328,7 +441,8 @@ ${blocoPresc}
 
   /** Gera texto puro da petição para PDF/RTF */
   RENDER_TEXT(d){
-    if(d.tipoPeca==='inicial') return renderPeticaoInicialTEXT(d);
+    if(d.tipoPeca==='impugnacao') return renderImpugnacaoTEXT(d);
+    if(d.tipoPeca==='inicial')    return renderPeticaoInicialTEXT(d);
     const fmt=FinancialEngine.fmt.bind(FinancialEngine);
     const ext=numExtenso;
     const fmtExt=(v)=>`R$ ${fmt(v)} (${ext(v)})`;
