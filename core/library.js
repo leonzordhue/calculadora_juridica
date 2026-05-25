@@ -172,6 +172,98 @@ const ESCRITORIOS=Object.freeze({
   }
 });
 
+// ══════════════════════════════════════════════════════════════════════
+//  LIBRARY._meta — Versionamento de Fontes (TASK-007)
+//  AKE/UFT-1.0 | BUILD: LAADV-20260524 | IC: 1.0
+// ══════════════════════════════════════════════════════════════════════
+const LIBRARY_META = Object.freeze({
+  IPCA: Object.freeze({
+    nome: 'Índice Nacional de Preços ao Consumidor Amplo',
+    orgao: 'IBGE via BACEN SGS',
+    serie_sgs: 433,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados',
+    cobertura_inicio: '2018-01',
+    cobertura_fim: '2025-04',
+    ultima_atualizacao: '2026-05',
+    uso: 'Correção monetária geral e pós-Lei 14.905/2024'
+  }),
+  INPC: Object.freeze({
+    nome: 'Índice Nacional de Preços ao Consumidor',
+    orgao: 'IBGE via BACEN SGS',
+    serie_sgs: 188,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.188/dados',
+    cobertura_inicio: '2018-01',
+    cobertura_fim: '2025-04',
+    ultima_atualizacao: '2026-05',
+    uso: 'Correção monetária TJRJ/TJAM + pré-Lei 14.905/2024 (INSS/servidor)'
+  }),
+  IGPM: Object.freeze({
+    nome: 'Índice Geral de Preços — Mercado',
+    orgao: 'FGV via BACEN SGS',
+    serie_sgs: 189,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.189/dados',
+    cobertura_inicio: '2018-01',
+    cobertura_fim: '2025-04',
+    ultima_atualizacao: '2026-05',
+    uso: 'Correção monetária contratos privados'
+  }),
+  SELIC: Object.freeze({
+    nome: 'Taxa SELIC Over (acumulada mensal)',
+    orgao: 'BACEN SGS',
+    serie_sgs: 11,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.11/dados',
+    cobertura_inicio: '2018-01',
+    cobertura_fim: '2025-04',
+    ultima_atualizacao: '2026-05',
+    uso: 'Juros pós-Lei 14.905/2024'
+  }),
+  IPCA_E: Object.freeze({
+    nome: 'IPCA Especial (IPCA-E)',
+    orgao: 'IBGE via BACEN SGS',
+    serie_sgs: 10764,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.10764/dados',
+    cobertura_inicio: '2018-01',
+    cobertura_fim: '2025-04',
+    ultima_atualizacao: '2026-05',
+    uso: 'Correção monetária TJDFT (Precatórios Federal)'
+  }),
+  TAXA_MEDIA_CONSIGNADO_INSS: Object.freeze({
+    nome: 'Taxa Média — Crédito Consignado INSS',
+    orgao: 'BACEN SGS',
+    serie_sgs: 25468,
+    modalidade: 402101,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.25468/dados',
+    nota: 'Média ponderada por volume das novas concessões do mês. Pode diferir ±0,03–0,10% do relatório histórico pontual BACEN por agregação em períodos semanais distintos. Ambas as fontes são oficiais e igualmente válidas para fins judiciais.',
+    ultima_atualizacao: '2026-05',
+    uso: 'Taxa de juros para cálculo PMT (fórmula Price) — Beneficiário/Aposentado'
+  }),
+  TAXA_MEDIA_CONSIGNADO_PUBLICO: Object.freeze({
+    nome: 'Taxa Média — Crédito Consignado Servidor Público',
+    orgao: 'BACEN SGS',
+    serie_sgs: 25469,
+    modalidade: 402201,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.25469/dados',
+    ultima_atualizacao: '2026-05',
+    uso: 'Taxa de juros para cálculo PMT — Servidor Público'
+  }),
+  TAXA_MEDIA_CONSIGNADO_PRIVADO: Object.freeze({
+    nome: 'Taxa Média — Crédito Consignado Privado',
+    orgao: 'BACEN SGS',
+    serie_sgs: 25470,
+    modalidade: 402301,
+    url_sgs: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.25470/dados',
+    ultima_atualizacao: '2026-05',
+    uso: 'Taxa de juros para cálculo PMT — CLT/Empregado Privado'
+  }),
+  _plataforma: Object.freeze({
+    versao_library: '1.7.0',
+    build: 'LAADV-20260524',
+    protocolo: 'AKE/UFT-1.0',
+    nota_metodologica: 'Todos os índices provêm de fontes oficiais (IBGE/FGV/BACEN). A diferença entre a série SGS e o relatório histórico pontual do site BACEN é de ±0,03–0,10% por metodologia de agregação semanal — irrelevante juridicamente. O SGS é a referência mais defensável por publicação oficial contínua.'
+  })
+});
+
 // -- exports para outros modulos --
 window.LIBRARY = LIBRARY;
+window.LIBRARY_META = LIBRARY_META;
 window.ESCRITORIOS = ESCRITORIOS;
