@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.3.3</title>
+<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.4.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
@@ -193,7 +193,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 <div class="header">
   <div>
     <div class="hd-title">LAADV — Plataforma Axiomática</div>
-    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.3.3</div>
+    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.4.0</div>
   </div>
   <div class="hd-right">
     <span class="q-chip" id="header-q">Q=—</span>
@@ -2425,7 +2425,7 @@ function gerarFundamentoCalculo(){
  • Cobrança indevida de RMC/RCC: vedação à vinculação de crédito/débito
    automático sem autorização expressa — art. 39, III e VI, CDC;
    Resolução BACEN nº 3.694/2009; Resolução BACEN nº 4.676/2018
- • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3.3`;
+ • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.4.0`;
 }
 
 /** Gera texto formal do sistema de apuração para conversão consignado */
@@ -2487,7 +2487,7 @@ function gerarFundamentoConsignado(){
  • Fórmula Price (PMT): mesma da Calculadora do Cidadão BACEN (bcb.gov.br)
  • Repetição em dobro: art. 42, parágrafo único, CDC (Lei nº 8.078/1990)
  • Cobrança indevida RMC/RCC: art. 39, III e VI, CDC; Res. BACEN 3.694/2009
- • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.3.3`;
+ • Plataforma: LAADV — Sistema Axiomático de Cálculo Jurídico-Financeiro v1.4.0`;
 }
 
 /** Copia o texto de fundamento para a área de transferência */
@@ -2548,7 +2548,7 @@ function gerarFundamentoPDF(tipo){
       doc.setFont('helvetica','normal');
       doc.setFontSize(8.5);
       doc.setTextColor(...GOLD);
-      doc.text('AKE/UFT-1.0 · Sistema de Apuração Formal para Impugnação · v1.3.3',mL,20);
+      doc.text('AKE/UFT-1.0 · Sistema de Apuração Formal para Impugnação · v1.4.0',mL,20);
       doc.setTextColor(...WHITE);
       doc.setFontSize(8);
       doc.text(titulo,mL,28);
@@ -2582,7 +2582,7 @@ function gerarFundamentoPDF(tipo){
     doc.setTextColor(...MUTED);
     doc.setFont('helvetica','normal');
     doc.setFontSize(6.5);
-    doc.text('LAADV · AKE/UFT-1.0 · v1.3.3 · Plataforma Axiomática de Cálculo Jurídico-Financeiro',mL,pH-6);
+    doc.text('LAADV · AKE/UFT-1.0 · v1.4.0 · Plataforma Axiomática de Cálculo Jurídico-Financeiro',mL,pH-6);
     doc.text(`Página ${pageNum} de ${totalPages} · Emitido em ${hoje}`,pW-mR,pH-6,{align:'right'});
   }
   // ── Renderizar texto ──
@@ -3275,7 +3275,7 @@ function exportarPeticaoPDF(){
     doc.setTextColor(120,130,130);
     doc.setFont('helvetica','normal');
     doc.setFontSize(6.5);
-    doc.text(`LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.3.3`,mL,pH-5);
+    doc.text(`LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.4.0`,mL,pH-5);
     doc.text(`Página ${p} de ${total} · ${hoje}`,pW-mR,pH-5,{align:'right'});
   }
 
@@ -3398,7 +3398,7 @@ const kernel=new AKEKernel();
   document.getElementById('rel-database').value=hoje;
   document.getElementById('pet-data-assina').value=hoje;
   selecionarEscritorio('LAADV'); // pré-carrega perfil LAADV
-  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.3.3');
+  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.4.0');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
   kernel.registrarBuild('PARSER','BradescoParser + INSSParser · detectarTipo() automático');
