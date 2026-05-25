@@ -9,7 +9,7 @@
 
 | Task | Título | Agente | Status | Prioridade |
 |------|--------|--------|--------|------------|
-| TASK-001 | Modularização /core /io /render | codex | ready | ALTA |
+| TASK-001 | Modularização /core /io /render | codex | done | ALTA |
 | TASK-002 | localStorage — Perfil do Advogado | claude-work | ready | ALTA |
 | TASK-003 | Template Petição Inicial RMC/RCC | claude-work | ready | MEDIA |
 | TASK-004 | Template Impugnação à Execução | claude-work | blocked | MEDIA |
@@ -26,7 +26,7 @@
 ## TASK-001 — Modularização: /core /io /render
 
 ```
-status: ready
+status: done
 agent: codex
 branch: codex/modular-core
 prioridade: ALTA
@@ -71,10 +71,10 @@ O projeto está em `LAADV_Calculadora_Juridica_v1.html` — arquivo único de ~3
 - [ ] `window.*` exports necessários para que módulos se comuniquem (sem bundler)
 
 ### Status de Execução
-- [ ] Análise de dependências concluída
-- [ ] Módulos extraídos e salvos
-- [ ] HTML refatorado
-- [ ] Testado sem erros no console
+- [x] Análise de dependências concluída
+- [x] Módulos extraídos e salvos
+- [x] HTML refatorado
+- [x] Testado sem erros no console
 - [ ] PR aberto contra `main`
 
 ---
