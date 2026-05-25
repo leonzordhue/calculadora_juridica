@@ -49,6 +49,104 @@ function dataExtenso(dateStr){
   return `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
 }
 
+function renderPeticaoInicialHTML(d){
+  const fmt=FinancialEngine.fmt.bind(FinancialEngine);
+  const fmtExt=(v)=>`R$ ${fmt(v)} (${numExtenso(v)})`;
+  const dAssina=d.data_assina?dataExtenso(d.data_assina):dataExtenso(new Date().toISOString().slice(0,10));
+  const valorCausa=(d.matSimples||0)+(d.danosMorais||0);
+  const danosMoraisPedido=d.danosMorais>0
+    ? `<p>c) A condenacao da parte re ao pagamento de danos morais no valor de ${fmtExt(d.danosMorais)}, ou outro valor que Vossa Excelencia entender adequado;</p>`
+    : '';
+  return `
+<p class="pet-destino">EXMO(A). SR(A). JUIZ(A) DA ${d.vara} VARA CIVEL DA COMARCA DE ${d.cidadeComarca}</p>
+<p class="pet-intro"><strong>${d.autor}</strong>, ${d.cpfAutor?`inscrit${d.pronome_a} no CPF sob o n. ${d.cpfAutor}, `:''}residente e domiciliad${d.pronome_a} em ${d.enderecoCliente}, vem, respeitosamente, perante Vossa Excelencia, por intermedio de seu advogado, propor a presente <strong>ACAO DECLARATORIA DE INEXISTENCIA DE DEBITO C/C REPETICAO DE INDEBITO E INDENIZACAO POR DANOS MORAIS</strong> em face de <strong>${d.bancoReu}</strong>, inscrito no CNPJ sob o n. ${d.cnpjBanco}, pelos fatos e fundamentos a seguir expostos.</p>
+
+<p class="pet-secao">I - DOS FATOS</p>
+<p class="pet-p">A parte Autora e beneficiaria de verba de natureza alimentar e passou a sofrer descontos vinculados a reserva de margem consignavel/cartao consignado, modalidade RMC/RCC, sem contratacao livre, clara e suficientemente informada.</p>
+<p class="pet-p">Os descontos foram identificados a partir dos documentos bancarios e previdenciarios analisados pelo sistema LAADV, que apurou total descontado de ${fmtExt(d.totalDesc)} e valor de compensacao estimado em ${fmtExt(d.valorComp)}.</p>
+<p class="pet-p">Apos a compensacao dos valores efetivamente disponibilizados, remanesce indebido material simples de ${fmtExt(d.matSimples)}, sem prejuizo da aplicacao da repeticao em dobro quando demonstrada a cobranca indevida.</p>
+
+<p class="pet-secao">II - DO DIREITO</p>
+<p class="pet-p">A relacao discutida e de consumo, aplicando-se o Codigo de Defesa do Consumidor, inclusive quanto ao dever de informacao, a inversao do onus da prova e a restituicao em dobro prevista no art. 42, paragrafo unico.</p>
+<p class="pet-p">A contratacao de credito consignado deve observar os limites e finalidades da Lei n. 10.820/2003, nao podendo o consumidor ser conduzido a operacao diversa daquela efetivamente pretendida ou compreendida.</p>
+<p class="pet-p">Para fins de atualizacao monetaria e juros, requer-se a aplicacao dos criterios legais pertinentes, inclusive a Lei n. 14.905/2024 quanto aos periodos por ela alcancados.</p>
+
+<p class="pet-secao">III - DOS PEDIDOS</p>
+<div class="pet-pedidos">
+  <p>a) A declaracao de inexistencia ou nulidade da contratacao RMC/RCC questionada;</p>
+  <p>b) A condenacao da parte re a restituicao do indebido, preferencialmente em dobro, nos termos do art. 42, paragrafo unico, do CDC;</p>
+  ${danosMoraisPedido}
+  <p>d) A inversao do onus da prova, para que a instituicao financeira apresente contrato, autorizacoes e demonstrativos completos da operacao;</p>
+  <p>e) A citacao da parte re para contestar, sob pena de revelia;</p>
+  <p>f) A condenacao da parte re ao pagamento das custas e honorarios advocaticios.</p>
+</div>
+
+<p class="pet-secao">IV - DO VALOR DA CAUSA</p>
+<p class="pet-p">Da-se a causa o valor de <strong>${fmtExt(valorCausa)}</strong>, correspondente a soma do indebido material simples apurado com os danos morais estimados.</p>
+<p class="pet-p">Protesta provar o alegado por todos os meios admitidos em direito, especialmente prova documental, pericial contabil e exibicao do contrato pela instituicao financeira.</p>
+<p style="text-align:center;margin-bottom:20px">Nestes termos, pede deferimento.</p>
+<p style="text-align:center;margin-bottom:24px">${d.cidade}, ${dAssina}.</p>
+<div class="pet-assinatura">
+  ${d.adv_nome}<br>
+  ADVOGADO<br>
+  ${d.adv_oab_assina}
+</div>`;
+}
+
+function renderPeticaoInicialTEXT(d){
+  const fmt=FinancialEngine.fmt.bind(FinancialEngine);
+  const fmtExt=(v)=>`R$ ${fmt(v)} (${numExtenso(v)})`;
+  const dAssina=d.data_assina?dataExtenso(d.data_assina):dataExtenso(new Date().toISOString().slice(0,10));
+  const valorCausa=(d.matSimples||0)+(d.danosMorais||0);
+  const pedidos=[
+    'a) A declaracao de inexistencia ou nulidade da contratacao RMC/RCC questionada;',
+    'b) A condenacao da parte re a restituicao do indebido, preferencialmente em dobro, nos termos do art. 42, paragrafo unico, do CDC;',
+    d.danosMorais>0?`c) A condenacao da parte re ao pagamento de danos morais no valor de ${fmtExt(d.danosMorais)}, ou outro valor que Vossa Excelencia entender adequado;`:'',
+    'd) A inversao do onus da prova, para que a instituicao financeira apresente contrato, autorizacoes e demonstrativos completos da operacao;',
+    'e) A citacao da parte re para contestar, sob pena de revelia;',
+    'f) A condenacao da parte re ao pagamento das custas e honorarios advocaticios.'
+  ].filter(Boolean);
+  return [
+    `EXMO(A). SR(A). JUIZ(A) DA ${d.vara} VARA CIVEL DA COMARCA DE ${d.cidadeComarca}`,
+    '',
+    `${d.autor}, ${d.cpfAutor?`inscrit${d.pronome_a} no CPF sob o n. ${d.cpfAutor}, `:''}residente e domiciliad${d.pronome_a} em ${d.enderecoCliente}, vem, respeitosamente, perante Vossa Excelencia, por intermedio de seu advogado, propor a presente ACAO DECLARATORIA DE INEXISTENCIA DE DEBITO C/C REPETICAO DE INDEBITO E INDENIZACAO POR DANOS MORAIS em face de ${d.bancoReu}, inscrito no CNPJ sob o n. ${d.cnpjBanco}, pelos fatos e fundamentos a seguir expostos.`,
+    '',
+    'I - DOS FATOS',
+    '',
+    'A parte Autora e beneficiaria de verba de natureza alimentar e passou a sofrer descontos vinculados a reserva de margem consignavel/cartao consignado, modalidade RMC/RCC, sem contratacao livre, clara e suficientemente informada.',
+    '',
+    `Os descontos foram identificados a partir dos documentos bancarios e previdenciarios analisados pelo sistema LAADV, que apurou total descontado de ${fmtExt(d.totalDesc)} e valor de compensacao estimado em ${fmtExt(d.valorComp)}.`,
+    '',
+    `Apos a compensacao dos valores efetivamente disponibilizados, remanesce indebido material simples de ${fmtExt(d.matSimples)}, sem prejuizo da aplicacao da repeticao em dobro quando demonstrada a cobranca indevida.`,
+    '',
+    'II - DO DIREITO',
+    '',
+    'A relacao discutida e de consumo, aplicando-se o Codigo de Defesa do Consumidor, inclusive quanto ao dever de informacao, a inversao do onus da prova e a restituicao em dobro prevista no art. 42, paragrafo unico.',
+    '',
+    'A contratacao de credito consignado deve observar os limites e finalidades da Lei n. 10.820/2003, nao podendo o consumidor ser conduzido a operacao diversa daquela efetivamente pretendida ou compreendida.',
+    '',
+    'Para fins de atualizacao monetaria e juros, requer-se a aplicacao dos criterios legais pertinentes, inclusive a Lei n. 14.905/2024 quanto aos periodos por ela alcancados.',
+    '',
+    'III - DOS PEDIDOS',
+    '',
+    ...pedidos.map(p=>`          ${p}`),
+    '',
+    'IV - DO VALOR DA CAUSA',
+    '',
+    `Da-se a causa o valor de ${fmtExt(valorCausa)}, correspondente a soma do indebido material simples apurado com os danos morais estimados.`,
+    '',
+    'Protesta provar o alegado por todos os meios admitidos em direito, especialmente prova documental, pericial contabil e exibicao do contrato pela instituicao financeira.',
+    '',
+    'Nestes termos, pede deferimento.',
+    '',
+    `${d.cidade}, ${dAssina}.`,
+    '',
+    d.adv_nome,
+    'ADVOGADO',
+    d.adv_oab_assina
+  ].join('\n');
+}
+
 /** Perfis dos escritórios */
 
 
@@ -69,17 +167,25 @@ const PetitionEngine={
     const matSimples=Math.max(0,totalDesc-valorComp);
     const honorarios=Math.round(((danosMat+moraisAtu)*honPct/100)*100)/100;
     const totalExec=danosMat+moraisAtu+honorarios;
+    const tipoPeca=document.getElementById('pet-tipo-peca')?.value||'cumprimento';
+    const enderecoCliente=document.getElementById('pet-endereco-cliente')?.value||'';
+    const cnpjBanco=document.getElementById('pet-cnpj-banco')?.value||'';
+    const danosMorais=parseFloat(document.getElementById('pet-danos-morais')?.value)||0;
     const genero=g('pet-genero')||'F';
     const F=genero==='F';
     return {
+      tipoPeca,
       processo:g('pet-processo'),
       vara:g('pet-vara'),
       comarca:g('pet-comarca').toUpperCase(),
       uf:g('pet-uf').toUpperCase(),
+      cidadeComarca:(document.getElementById('pet-cidade-comarca')?.value||`${g('pet-comarca')}/${g('pet-uf')}`).toUpperCase(),
       juizo_prefix:g('pet-juizo'),
       tipo_decisao:g('pet-tipo-decisao')==='acordao'?'sentença e acórdão':'sentença',
       data_apuracao:g('pet-data-apuracao'),
       autor:g('pet-autor').toUpperCase(),
+      cpfAutor:document.getElementById('pet-cliente-cpf')?.value||document.getElementById('pet-autor-cpf')?.value||'',
+      enderecoCliente,
       genero,
       pronome_a:F?'a':'o',
       autor_a:F?'Autora':'Autor',
@@ -93,7 +199,9 @@ const PetitionEngine={
       mes_indevido:g('pet-mes-indevido').toUpperCase(),
       data_ini_indevido:g('pet-data-ini-indevido'),
       valorSaque, valorComp, totalDesc, matSimples, danosMat,
-      moraisSimples, moraisAtu, honPct, honorarios, totalExec,
+      moraisSimples, moraisAtu, danosMorais, honPct, honorarios, totalExec,
+      bancoReu:document.getElementById('pet-banco-reu')?.value||g('pet-banco-nome')||'Banco Réu',
+      cnpjBanco,
       adv_nome:g('pet-adv-nome')||esc.adv_nome,
       adv_oab:g('pet-adv-oab')||esc.adv_oab,
       adv_oab_assina:g('pet-adv-oab-assina')||esc.adv_oab_assina,
@@ -122,11 +230,17 @@ const PetitionEngine={
       [d.danosMat,'Danos Materiais Atualizados']
     ];
     const missing=required.filter(([v])=>!v||v===0).map(([,l])=>l);
+    if(d.tipoPeca==='inicial'){
+      if(!d.vara) missing.push('Número da Vara');
+      if(!d.enderecoCliente) missing.push('Endereço do cliente');
+      if(!d.cnpjBanco) missing.push('CNPJ do banco réu');
+    }
     return missing;
   },
 
   /** Gera HTML da petição para preview */
   RENDER_HTML(d){
+    if(d.tipoPeca==='inicial') return renderPeticaoInicialHTML(d);
     const fmt=FinancialEngine.fmt.bind(FinancialEngine);
     const ext=numExtenso;
     const fmtExt=(v)=>`R$ ${fmt(v)} (${ext(v)})`;
@@ -214,6 +328,7 @@ ${blocoPresc}
 
   /** Gera texto puro da petição para PDF/RTF */
   RENDER_TEXT(d){
+    if(d.tipoPeca==='inicial') return renderPeticaoInicialTEXT(d);
     const fmt=FinancialEngine.fmt.bind(FinancialEngine);
     const ext=numExtenso;
     const fmtExt=(v)=>`R$ ${fmt(v)} (${ext(v)})`;
