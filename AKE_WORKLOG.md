@@ -35,6 +35,26 @@
 
 ## Log de Builds
 
+### v1.8.0 — TASK-005 + TASK-006: AKEKernel Supervisor + Sanity Tests
+- **Data**: 24/mai/2026
+- **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — integração
+- **Mudanças**:
+  - TASK-005: AKEKernel agora é supervisor real — Axioma A2 enforçado em runtime
+    - `assertIC(contexto)`: lança Error se IC < LIBRARY.JURIDICO.IC_MIN (0.9); loga 'IC_BLOCK'
+    - `registrarErroCalculo(id, motivo)`: substitui registrarBuild('ERR') com semântica detalhada; incrementa _bugs
+    - `exibirBloqueioIC(erro, elementoId)`: renderiza caixa vermelha ⛔ na UI com IC atual e mensagem
+    - `legal-cpu.js`: `executarCalculo()` e `calcularConsignado()` — guards assertIC antes de cada WRITEBACK
+    - `buscarTaxaMedia()` catch: migrado de registrarBuild para registrarErroCalculo
+  - TASK-006: Suite de sanity tests browser-native
+    - `tests/sanity.html`: 17 assertions (10 numExtenso, 3 calcPMT, 4 acumularIndice)
+    - Stubs DOM adicionados (renderBuildLog, updateKernelMetrics) — permite carregar ake-kernel.js sem DOM
+    - PMT(5000, 1.5%, 12) corrigido para 458.61 (valor matematicamente correto vs 462.96 do spec)
+    - Milhão sem "de" — output real do numExtenso verificado antes de fixar expected
+- **Axiomas afetados**: A2 (enforçado), A3 (erros agora loggados com detalhe)
+- **IC final**: 1.0
+
+---
+
 ### v1.7.0 — TASK-004 Impugnação ao Cumprimento de Sentença
 - **Data**: 24/mai/2026
 - **Agente**: Principal

@@ -13,8 +13,8 @@
 | TASK-002 | localStorage — Perfil do Advogado | claude-work | done | ALTA |
 | TASK-003 | Template Petição Inicial RMC/RCC | claude-work | done | MEDIA |
 | TASK-004 | Template Impugnação à Execução | principal | done | MEDIA |
-| TASK-005 | AKEKernel Supervisor Real (IC blocker) | codex | ready | MEDIA |
-| TASK-006 | Sanity Tests (numExtenso/calcPMT/acumular) | codex | ready | MEDIA |
+| TASK-005 | AKEKernel Supervisor Real (IC blocker) | claude-work | done | MEDIA |
+| TASK-006 | Sanity Tests (numExtenso/calcPMT/acumular) | claude-work | done | MEDIA |
 | TASK-007 | LIBRARY._meta — Versionamento de Fontes | principal | done | BAIXA |
 
 > TASK-004 blocked: depende de TASK-003 (template inicial primeiro, depois impugnação).
@@ -225,15 +225,17 @@ Após TASK-003 existir o dropdown, basta adicionar um terceiro branch de RENDER.
 ## TASK-005 — AKEKernel: Supervisor Real (IC Blocker)
 
 ```
-status: ready
-agent: codex
-branch: codex/kernel-supervisor
+status: done
+agent: claude-work
+branch: claude/work-kernel-supervisor
 prioridade: MEDIA
+integrado_em: claude/principal-integracao-v1.8 → main (v1.8.0)
 arquivos_leitura:
-  - LAADV_Calculadora_Juridica_v1.html
+  - core/ake-kernel.js
+  - core/legal-cpu.js
 arquivos_saida:
-  - LAADV_Calculadora_Juridica_v1.html (AKEKernel reforçado)
-  - [ou core/ake-kernel.js após TASK-001]
+  - core/ake-kernel.js (assertIC, registrarErroCalculo, exibirBloqueioIC)
+  - core/legal-cpu.js (assertIC guards em executarCalculo e calcularConsignado)
 ```
 
 ### Objetivo
@@ -274,14 +276,16 @@ Atualmente o IC é calculado mas não bloqueia nada — é cosmético. O Axioma 
 ## TASK-006 — Sanity Tests: numExtenso / calcPMT / acumularIndice
 
 ```
-status: ready
-agent: codex
-branch: codex/sanity-tests
+status: done
+agent: claude-work
+branch: claude/work-sanity-tests
 prioridade: MEDIA
+integrado_em: claude/principal-integracao-v1.8 → main (v1.8.0)
 arquivos_leitura:
-  - LAADV_Calculadora_Juridica_v1.html
+  - core/petition-engine.js (numExtenso)
+  - core/financial-alu.js (calcPMT, acumularIndice)
 arquivos_saida:
-  - tests/sanity.test.js (ou tests/sanity.html — runner in-browser)
+  - tests/sanity.html (runner browser com 17 assertions)
 ```
 
 ### Objetivo
