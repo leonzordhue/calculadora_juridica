@@ -35,6 +35,29 @@
 
 ## Log de Builds
 
+### v1.5.0 — Modularização + localStorage (Integração Principal)
+- **Data**: 24/mai/2026
+- **Agente**: Codex (módulos) + Claude-Work (localStorage) + Principal (integração)
+- **Mudanças**:
+  - TASK-001: HTML 3537→1437 linhas — JS extraído para 8 módulos independentes
+    - `core/library.js` — ROM LIBRARY + ESCRITORIOS (Object.freeze, Axioma A1)
+    - `core/financial-alu.js` — FinancialEngine puro sem efeitos de UI (Axioma A5)
+    - `core/ake-kernel.js` — AKEKernel + UIState + kernel
+    - `core/legal-cpu.js` — LegalCPU, pipeline de cálculo
+    - `core/petition-engine.js` — PetitionEngine + numExtenso + dataExtenso
+    - `io/bradesco-parser.js` — BradescoParser
+    - `io/inss-parser.js` — INSSParser + detectarTipo
+    - `render/report-builder.js` — ReportBuilder + PDF + RTF
+  - TASK-002: PerfilStorage — localStorage do perfil do escritório (debounce, try/catch, anti-loop)
+  - AKE_PROTOCOL.md: isolamento de pastas por agente (Codex=*.js, Claude-Work=HTML, Principal=integração)
+- **Lição aprendida**: agentes sem isolamento de arquivos geram conflito de merge. Solução: cada agente toca apenas sua pasta/tipo de arquivo.
+- **Axiomas afetados**: A1, A3, A5, A6
+- **IC final**: 1.0
+
+---
+
+## Log de Builds
+
 ### v1.0.0 — Fundação
 - **Data**: mai/2026
 - **Agente**: Claude (Principal/Sonnet)

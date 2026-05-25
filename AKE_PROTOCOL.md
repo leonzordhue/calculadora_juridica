@@ -87,16 +87,31 @@ ready → in_progress → done → (Principal mergeia) → archived
 
 ---
 
-## Isolamento de Arquivos por Agente
+## Isolamento de Arquivos por Agente (v1.5.0+)
 
-| Branch Pattern | Arquivos permitidos |
-|----------------|---------------------|
-| `codex/*` | `/core/*.js`, `/io/*.js`, `/render/*.js`, arquivos de teste |
-| `claude/work-*` | `LAADV_Calculadora_Juridica_v1.html` (features UI, templates) |
-| `claude/principal-*` | `AKE_TASKS.md`, `AKE_WORKLOG.md`, `AKE_PROTOCOL.md`, `main` HTML |
+A modularização (TASK-001) está concluída. A partir de agora cada agente tem território exclusivo:
 
-> Durante a fase pré-modularização, Claude-Work trabalha no HTML monolítico.
-> Após TASK-001 (modularização), cada agente toca apenas seu módulo.
+| Branch Pattern | Arquivos permitidos | Arquivos PROIBIDOS |
+|----------------|---------------------|--------------------|
+| `codex/*` | `core/*.js`, `io/*.js`, `render/*.js`, `tests/*` | HTML, AKE_*.md |
+| `claude/work-*` | SOMENTE a seção HTML (estrutura, formulários, CSS) — **nunca o bloco `<script>`** | Qualquer `.js`, AKE_*.md |
+| `claude/principal-*` | Tudo — integração, merge, AKE_*.md, versão | Nunca em paralelo com outros |
+
+### Regra de Ouro — "Pasta Própria"
+- **Codex** entrega `.js` — nunca toca no `.html`
+- **Claude-Work** entrega HTML (campos, layout) — nunca toca em `.js`
+- **Principal** faz a cola: pega o `.js` do Codex + o HTML do Claude-Work e integra
+
+### Como funciona na prática
+1. Codex cria/edita `core/petition-engine.js` com nova função
+2. Claude-Work adiciona campos HTML no formulário correspondente
+3. Os dois entregam sem conflito porque tocam arquivos diferentes
+4. Principal integra: conecta os campos HTML às funções JS, testa, mergeia
+
+### Nunca mais
+- Claude-Work **nunca** remove ou adiciona `<script>` tags
+- Codex **nunca** edita o HTML
+- Nenhum agente edita arquivo fora do seu território sem autorização explícita do Principal
 
 ---
 
