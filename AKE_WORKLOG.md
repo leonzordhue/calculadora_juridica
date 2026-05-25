@@ -35,6 +35,24 @@
 
 ## Log de Builds
 
+### v1.7.0 — TASK-004 Impugnação ao Cumprimento de Sentença
+- **Data**: 24/mai/2026
+- **Agente**: Principal
+- **Mudanças**: Template Impugnação completo — renderImpugnacaoHTML/TEXT, tabela de valores LAADV inline, metodologia Price/BACEN/Lei 14.905, 4 pedidos. VALIDATE condicional. Opção no select pet-tipo-peca.
+- **Axiomas afetados**: A3, A5
+- **IC final**: 1.0
+
+---
+
+### v1.6.0 — TASK-003 Template Petição Inicial RMC/RCC
+- **Data**: 24/mai/2026
+- **Agente**: Claude-Work (HTML) + Codex (JS) + Principal (integração + toggleCamposPeca)
+- **Mudanças**: Dropdown tipo de peça, campos pet-vara/pet-endereco-cliente/pet-cnpj-banco/pet-danos-morais, renderPeticaoInicialHTML/TEXT, DECODE+VALIDATE atualizados
+- **Axiomas afetados**: A3, A5
+- **IC final**: 1.0
+
+---
+
 ### v1.5.0 — Modularização + localStorage (Integração Principal)
 - **Data**: 24/mai/2026
 - **Agente**: Codex (módulos) + Claude-Work (localStorage) + Principal (integração)

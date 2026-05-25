@@ -9,13 +9,13 @@
 
 | Task | Título | Agente | Status | Prioridade |
 |------|--------|--------|--------|------------|
-| TASK-001 | Modularização /core /io /render | codex | ready | ALTA |
-| TASK-002 | localStorage — Perfil do Advogado | claude-work | ready | ALTA |
-| TASK-003 | Template Petição Inicial RMC/RCC | claude-work | ready | MEDIA |
-| TASK-004 | Template Impugnação à Execução | claude-work | blocked | MEDIA |
+| TASK-001 | Modularização /core /io /render | codex | done | ALTA |
+| TASK-002 | localStorage — Perfil do Advogado | claude-work | done | ALTA |
+| TASK-003 | Template Petição Inicial RMC/RCC | claude-work | done | MEDIA |
+| TASK-004 | Template Impugnação à Execução | principal | done | MEDIA |
 | TASK-005 | AKEKernel Supervisor Real (IC blocker) | codex | ready | MEDIA |
 | TASK-006 | Sanity Tests (numExtenso/calcPMT/acumular) | codex | ready | MEDIA |
-| TASK-007 | LIBRARY._meta — Versionamento de Fontes | codex | ready | BAIXA |
+| TASK-007 | LIBRARY._meta — Versionamento de Fontes | principal | done | BAIXA |
 
 > TASK-004 blocked: depende de TASK-003 (template inicial primeiro, depois impugnação).
 
