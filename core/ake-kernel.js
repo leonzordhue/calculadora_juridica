@@ -27,6 +27,26 @@ class AKEKernel {
   registrarFalha(id)  { this._total++;this._bugs++;this._ax_t++;this._probs.push(0);this._n++;this.registrarBuild('FAILURE',id); }
   registrarBuild(evento,detalhe){ this._log.push({ts:new Date().toISOString(),evento,detalhe});renderBuildLog();updateKernelMetrics(); }
   getLogs(){ return[...this._log]; }
+  assertIC(contexto=''){
+    const ic=this.calcIC();
+    if(ic<LIBRARY.JURIDICO.IC_MIN){
+      const msg=`WRITEBACK BLOQUEADO — IC: ${ic.toFixed(2)} < ${LIBRARY.JURIDICO.IC_MIN} [${contexto}]`;
+      this.registrarBuild('IC_BLOCK',msg);
+      throw new Error(msg);
+    }
+    return ic;
+  }
+  registrarErroCalculo(id,motivo){
+    this._total++;this._bugs++;this._ax_t++;this._probs.push(0);this._n++;
+    this.registrarBuild('CALC_ERROR',`[${id}] ${motivo}`);
+  }
+  exibirBloqueioIC(erro,elementoId){
+    const el=document.getElementById(elementoId);
+    if(!el)return;
+    const ic=this.calcIC();
+    el.innerHTML=`<div style="background:#C0392B;color:#fff;border-radius:10px;padding:20px 24px;margin-top:16px"><div style="font-size:16px;font-weight:700;margin-bottom:8px">⛔ WRITEBACK BLOQUEADO — IC: ${ic.toFixed(2)} (mínimo: ${LIBRARY.JURIDICO.IC_MIN})</div><div style="font-size:12px;opacity:.9">${erro.message}</div><div style="font-size:11px;opacity:.7;margin-top:6px">Corrija os erros acima e recalcule para liberar o resultado.</div></div>`;
+    el.classList.remove('hidden');
+  }
 }
 
 
