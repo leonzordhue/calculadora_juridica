@@ -1009,6 +1009,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 
     <!-- Botões de ação -->
     <div class="flex-end mt16">
+      <button class="btn btn-outline" onclick="PerfilStorage.limpar()" title="Remove o perfil salvo do escritório e restaura padrão LAADV">🗑 Limpar Perfil Salvo</button>
       <button class="btn btn-outline" onclick="limparPeticao()">🗑 Limpar</button>
       <button class="btn btn-outline" onclick="exportarPeticaoRTF()">📝 Exportar RTF (Word)</button>
       <button class="btn btn-gold" onclick="exportarPeticaoPDF()">📄 Gerar PDF</button>
@@ -3158,6 +3159,50 @@ ${blocoPresc}
   }
 };
 
+// ══════════════════════════════════════════════════════════════════════
+//  TASK-002 — localStorage: Perfil do Advogado
+//  AKE/UFT-1.0 | BUILD: LAADV-20260524 | IC: 1.0 | MÓDULO: PERFIL_STORAGE
+// ══════════════════════════════════════════════════════════════════════
+const PerfilStorage=(function(){
+  const CHAVE='laadv_perfil_v1';
+  const CAMPOS=['pet-adv-nome','pet-adv-oab','pet-adv-oab-assina',
+    'pet-escritorio-nome','pet-banco-nome','pet-banco-ag',
+    'pet-banco-cc','pet-banco-cnpj','pet-cidade'];
+  let _debounce=null,_carregando=false;
+  function salvar(imediato){
+    if(_carregando)return;
+    if(!imediato){clearTimeout(_debounce);_debounce=setTimeout(()=>salvar(true),500);return;}
+    try{
+      const escId=document.querySelector('input[name="pet-escritorio"]:checked')?.value||'LAADV';
+      const dados={escritorioId:escId};
+      CAMPOS.forEach(id=>{const el=document.getElementById(id);if(el)dados[id]=el.value;});
+      localStorage.setItem(CHAVE,JSON.stringify(dados));
+    }catch(e){}
+  }
+  function carregar(){
+    try{
+      const raw=localStorage.getItem(CHAVE);
+      if(!raw)return false;
+      const dados=JSON.parse(raw);
+      _carregando=true;
+      selecionarEscritorio(dados.escritorioId||'LAADV');
+      _carregando=false;
+      CAMPOS.forEach(id=>{
+        if(dados[id]!==undefined){const el=document.getElementById(id);if(el)el.value=dados[id];}
+      });
+      return true;
+    }catch(e){_carregando=false;return false;}
+  }
+  function limpar(){
+    try{localStorage.removeItem(CHAVE);}catch(e){}
+    selecionarEscritorio('LAADV');
+  }
+  function iniciarListeners(){
+    CAMPOS.forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',()=>salvar(false));});
+  }
+  return{salvar,carregar,limpar,iniciarListeners};
+})();
+
 /** Seleciona escritório e preenche campos do advogado */
 function selecionarEscritorio(id){
   const esc=ESCRITORIOS[id];
@@ -3173,6 +3218,7 @@ function selecionarEscritorio(id){
   document.getElementById('pet-banco-cc').value=esc.banco_cc;
   document.getElementById('pet-banco-cnpj').value=esc.banco_cnpj;
   document.getElementById('pet-cidade').value=esc.cidade;
+  PerfilStorage.salvar(true);
 }
 
 /** Toggle prescrição quinquenal */
@@ -3397,7 +3443,8 @@ const kernel=new AKEKernel();
   document.getElementById('c-fim').value=hoje;
   document.getElementById('rel-database').value=hoje;
   document.getElementById('pet-data-assina').value=hoje;
-  selecionarEscritorio('LAADV'); // pré-carrega perfil LAADV
+  if(!PerfilStorage.carregar()) selecionarEscritorio('LAADV'); // carrega perfil salvo ou padrão LAADV
+  PerfilStorage.iniciarListeners();
   kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.4.0');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
