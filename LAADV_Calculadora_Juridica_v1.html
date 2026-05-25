@@ -977,6 +977,20 @@ details[open] #trace-arrow{transform:rotate(90deg)}
           <input type="text" id="pet-adv-oab-assina">
         </div>
       </div>
+      <div class="form-row cols-3">
+        <div>
+          <label>Tribunal (padrão do escritório)</label>
+          <input type="text" id="pet-tribunal" placeholder="Ex: TJRJ">
+        </div>
+        <div>
+          <label>UF (padrão do escritório)</label>
+          <input type="text" id="pet-estado" placeholder="Ex: RJ" maxlength="2" style="text-transform:uppercase">
+        </div>
+        <div>
+          <label>Cidade/Comarca (padrão do escritório)</label>
+          <input type="text" id="pet-cidade-comarca" placeholder="Ex: Rio de Janeiro">
+        </div>
+      </div>
       <div class="form-row cols-4">
         <div>
           <label>Banco (depósito)</label>
@@ -2886,6 +2900,9 @@ const ESCRITORIOS=Object.freeze({
     banco_cc:'40721-6',
     banco_cnpj:'27.131.836/0002-62',
     cidade:'Rio de Janeiro',
+    estado:'RJ',
+    tribunal:'TJRJ',
+    cidade_comarca:'Rio de Janeiro',
     email:'contato_riodejaneiro@luisalbertadv.com.br',
     tel:'(21) 99828-2924',
     cor_primaria:[11,74,68],
@@ -2902,6 +2919,9 @@ const ESCRITORIOS=Object.freeze({
     banco_cc:'79472-8',
     banco_cnpj:'46.533.658/0001-60',
     cidade:'Manaus',
+    estado:'AM',
+    tribunal:'TJAM',
+    cidade_comarca:'Manaus',
     email:'nicolas.advogado@outlook.com',
     tel:'(92) 98270-2808',
     cor_primaria:[21,101,192],
@@ -3167,7 +3187,8 @@ const PerfilStorage=(function(){
   const CHAVE='laadv_perfil_v1';
   const CAMPOS=['pet-adv-nome','pet-adv-oab','pet-adv-oab-assina',
     'pet-escritorio-nome','pet-banco-nome','pet-banco-ag',
-    'pet-banco-cc','pet-banco-cnpj','pet-cidade'];
+    'pet-banco-cc','pet-banco-cnpj','pet-cidade',
+    'pet-estado','pet-tribunal','pet-cidade-comarca'];
   let _debounce=null,_carregando=false;
   function salvar(imediato){
     if(_carregando)return;
@@ -3218,6 +3239,9 @@ function selecionarEscritorio(id){
   document.getElementById('pet-banco-cc').value=esc.banco_cc;
   document.getElementById('pet-banco-cnpj').value=esc.banco_cnpj;
   document.getElementById('pet-cidade').value=esc.cidade;
+  document.getElementById('pet-tribunal').value=esc.tribunal;
+  document.getElementById('pet-estado').value=esc.estado;
+  document.getElementById('pet-cidade-comarca').value=esc.cidade_comarca;
   PerfilStorage.salvar(true);
 }
 
