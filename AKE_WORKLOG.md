@@ -35,6 +35,20 @@
 
 ## Log de Builds
 
+### v1.9.0 — TASK-008 + 009 + 010 + 011
+- **Data**: 26/mai/2026
+- **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — integração
+- **Mudanças**:
+  - TASK-008: Modo noturno — CSS vars `--bg-principal/card/input/txt-*`, `[data-tema="claro"]`, toggle no header, `alternarTema()`, localStorage
+  - TASK-009: Terceiro escritório `LAADV_AM` — Manaus, OAB/AM 8.251, Dra. Alessandra OAB/AM 15.217, conta Sicredi 66245-4, CNPJ 27.131.836/0001-81
+  - TASK-010: Parsers `ItauParser`, `BBParser`, `CaixaParser` criados; `detectarTipo()` expandido para 5 bancos (INSS/ITAU/BB/CAIXA/BRADESCO); `LIBRARY.KEYWORDS` expandido com `CARTAO_CREDITO`, `CESTA BASICA`, `CREDITO CONSIGNADO`; `LIBRARY.INSS_CODES` expandido com rubricas 101/137/303/316/322
+  - TASK-011: Rubricas personalizadas por sessão (`UIState.rubricasCustom`), reaplicação sobre transações importadas; entrada manual mês a mês com tabela interativa e importação para pipeline de batch
+  - Principal: conflito TASK-008/011 resolvido — ambas inseriam no mesmo ponto do `<script>`
+- **Axiomas afetados**: A1 (KEYWORDS/INSS_CODES expandidos dentro do freeze), A3 (log de RUBRICA_CUSTOM e MANUAL_IMPORT)
+- **IC final**: 1.0
+
+---
+
 ### v1.8.0 — TASK-005 + TASK-006: AKEKernel Supervisor + Sanity Tests
 - **Data**: 24/mai/2026
 - **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — integração
