@@ -35,6 +35,20 @@
 
 ## Log de Builds
 
+### v1.9.2 — TASK-013: Classificação por Rubricas Jurídicas
+- **Data**: 26/mai/2026
+- **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — auditoria e integração
+- **Mudanças**:
+  - TASK-013: `LIBRARY.RUBRICS` adicionado em `core/library.js` — array ordenado de 27 pares `[código, Object.freeze([padrões])]` (mais específico → mais genérico); posicionado entre `KEYWORDS` e `JURIDICO` dentro do `Object.freeze` de LIBRARY; Axioma A1 mantido
+  - `classificarRubrica(desc)` — função pura no HTML, first-match sobre `LIBRARY.RUBRICS`, string vazia se sem match
+  - Coluna "Rubrica" adicionada à tabela de extratos (entre Categoria e Crédito) em monospace com `--txt-detalhe`
+  - Campo `t.rubrica` atribuído no objeto de transação antes do render — persistido em `UIState.lastBatchResults`
+  - Rubricas: RMC, RCC, SEGURO_CARTAO, VIDA_PREV, SLN, SEGURO, MORA_CEL, MORA, JUROS_NC, JUROS_ABUSIVOS, TARIFA_CAD, TARIFA_IND, CESTA, ANP, ANUIDADE, GASTO_C_CRED, TIT_CAP, SVA, COBRANCA_IND, CARREGADOR_VENDA_CASADA, ESPECIFICA, INV_FACIL, COI_BOLETO, BX_ANT_FIN, AD_DEPOSITANTE, PARC_CRED_PESS, REFINANCIAMENTO_IND
+- **Axiomas afetados**: A1 (RUBRICS adicionado dentro do freeze de LIBRARY)
+- **IC final**: 1.0
+
+---
+
 ### v1.9.1 — TASK-012: UI Polish
 - **Data**: 26/mai/2026
 - **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — auditoria e integração
