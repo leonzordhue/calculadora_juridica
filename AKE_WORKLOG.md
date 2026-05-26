@@ -35,6 +35,22 @@
 
 ## Log de Builds
 
+### v1.9.3 — TASK-014: Deep Audit
+- **Data**: 26/mai/2026
+- **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — auditoria e integração
+- **Mudanças**:
+  - 12 bugs corrigidos: calcPMT(n=0)→Infinity, acumularIndice NaN silencioso, buscarTaxaMedia sem timeout, média BACEN com dados inválidos, listener acumulando entre imports, enviarParaCalcular descartando transações silenciosamente, detectarTipo ambiguidade CAIXA/BB, parsers sem guard PDF vazio, INSS rubricas desconhecidas silenciosas, numExtenso com valores inválidos, jsPDF guard mal posicionado
+  - `normalizarTexto()`: função NFD accent-strip criada em financial-alu.js, exportada, aplicada em todos os 5 parsers e em `classificarRubrica()`
+  - `navigator.onLine` check antes do fetch BACEN com mensagem clara
+  - Mensagem "Nenhuma transação encontrada" para PDF incompatível (era tabela em branco)
+  - Chips de rubricas detectadas na segunda linha do sumário de extratos
+  - Filtro dropdown de rubrica com show/hide de linhas (preserva checkboxes)
+  - `tests/sanity.html` expandido: normalizarTexto (4 assertions), calcPMT edge cases (3), acumularIndice período futuro (2), numExtenso valores especiais (3)
+- **Axiomas afetados**: A2 (IC blocker mais robusto), A3 (logs IDX_WARN e UI_WARN adicionados)
+- **IC final**: 1.0
+
+---
+
 ### v1.9.2 — TASK-013: Classificação por Rubricas Jurídicas
 - **Data**: 26/mai/2026
 - **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — auditoria e integração

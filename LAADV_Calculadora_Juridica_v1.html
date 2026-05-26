@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Calculadora Jurídica v1.9.2</title>
+<title>LAADV — Calculadora Jurídica v1.9.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
@@ -206,7 +206,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 <div class="header">
   <div>
     <div class="hd-title">LAADV — Calculadora Jurídica</div>
-    <div class="hd-sub">Cálculo Consignado · RMC/RCC · v1.9.2</div>
+    <div class="hd-sub">Cálculo Consignado · RMC/RCC · v1.9.3</div>
   </div>
   <div class="hd-right">
     <button id="btn-tema" onclick="alternarTema()"
@@ -1772,7 +1772,7 @@ function importarEntradaManual() {
   document.getElementById('pet-data-assina').value=hoje;
   if(!PerfilStorage.carregar()) selecionarEscritorio('LAADV');
   PerfilStorage.iniciarListeners();
-  kernel.registrarBuild('BOOT','LAADV Calculadora Jurídica v1.9.2');
+  kernel.registrarBuild('BOOT','LAADV Calculadora Jurídica v1.9.3');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
   kernel.registrarBuild('PARSER','BradescoParser + INSSParser + ItauParser + BBParser + CaixaParser · detectarTipo() automático');
