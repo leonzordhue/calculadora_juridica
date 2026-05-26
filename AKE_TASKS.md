@@ -20,7 +20,7 @@
 | TASK-009 | Terceiro Escritório LAADV/AM | claude-work | done | MEDIA |
 | TASK-010 | Parsers Itaú+BB+Caixa + KEYWORDS expandido | claude-work | done | ALTA |
 | TASK-011 | Rubrica Manual + Entrada Mês a Mês | claude-work | done | ALTA |
-| TASK-012 | UI Polish: Dark Mode + Header limpo + Abas | claude-work | ready | ALTA |
+| TASK-012 | UI Polish: Dark Mode + Header limpo + Abas | claude-work | done | ALTA |
 
 > TASK-011 depende de TASK-010 estar integrada em main (usa UIState.lastBatchResults).
 > TASK-008, 009, 010 podem ser executadas em qualquer ordem — arquivos não conflitam entre si.
@@ -426,11 +426,11 @@ Ver `PROMPT_CLAUDE_WORK_TASK_012.md`
 - [ ] Tema claro idêntico ao v1.9.0
 
 ### Status de Execução
-- [ ] Dark mode corrigido
-- [ ] Header limpo
-- [ ] Renomeação concluída
-- [ ] Abas reordenadas
-- [ ] PR aberto contra main
+- [x] Dark mode corrigido
+- [x] Header limpo
+- [x] Renomeação concluída
+- [x] Abas reordenadas
+- [x] Integrado em main (v1.9.1)
 
 ---
 

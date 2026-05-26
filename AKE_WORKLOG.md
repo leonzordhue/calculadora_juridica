@@ -35,6 +35,19 @@
 
 ## Log de Builds
 
+### v1.9.1 — TASK-012: UI Polish
+- **Data**: 26/mai/2026
+- **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — auditoria e integração
+- **Mudanças**:
+  - TASK-012: Dark mode funcional — `:root` define tema claro, `[data-tema="escuro"]` define tema escuro; `body`, `.card`, `input/select/textarea`, `.tabs-nav`, `label` agora usam vars de tema (`--bg-principal`, `--bg-card`, `--bg-input`, `--txt-principal`, etc.); `alternarTema()` e IIFE de restauração corrigidos para alternar `data-tema="escuro"`; aliases de retrocompatibilidade (`--gray-bg`, `--text`, `--muted`, `--border`) mapeados para as novas vars em ambos os temas
+  - Header limpo: `Q=—`, `IC=—`, `.ake-badge` removidos do HTML e CSS — lógica `updateKernelMetrics()` intacta
+  - Renomeação: "Plataforma Axiomática" → "Calculadora Jurídica" em `<title>`, `.hd-title`, `.hd-sub`, boot log
+  - Abas reordenadas: Peças antes de Sistema
+- **Axiomas afetados**: A3 (boot log atualizado)
+- **IC final**: 1.0
+
+---
+
 ### v1.9.0 — TASK-008 + 009 + 010 + 011
 - **Data**: 26/mai/2026
 - **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — integração
