@@ -169,6 +169,24 @@ const ESCRITORIOS=Object.freeze({
     tel:'(92) 98270-2808',
     cor_primaria:[21,101,192],
     cor_acento:[201,169,62]
+  },
+  LAADV_AM:{
+    id:'LAADV_AM',
+    adv_nome:'LUIS ALBERT DOS SANTOS OLIVEIRA',
+    adv_oab:'OAB/AM 8.251',
+    adv_oab_assina:'OAB/AM nº 8.251',
+    adv_oab2_nome:'ALESSANDRA VIRGINIA LOPES BRAGA',
+    adv_oab2:'OAB/AM 15.217',
+    escritorio_nome:'LUIS ALBERT DOS SANTOS OLIVEIRA SOCIEDADE INDIVIDUAL DE ADVOCACIA',
+    banco_nome:'SICREDI (748)',
+    banco_ag:'0802',
+    banco_cc:'66245-4',
+    banco_cnpj:'27.131.836/0001-81',
+    cidade:'Manaus',
+    email:'contato@luisalbertadv.com.br',
+    tel:'(92) 99000-0000',
+    cor_primaria:[11,74,68],
+    cor_acento:[201,169,62]
   }
 });
 
