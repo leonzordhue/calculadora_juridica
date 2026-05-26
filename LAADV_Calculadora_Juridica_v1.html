@@ -279,6 +279,78 @@ details[open] #trace-arrow{transform:rotate(90deg)}
       </div>
     </div>
   </div>
+
+  <!-- ═══ RUBRICAS PERSONALIZADAS ═══ -->
+  <div class="card" id="sec-rubricas-custom" style="margin-top:16px">
+    <div class="card-title" style="font-size:14px">Rubricas Personalizadas</div>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 8px">
+      Adicione termos específicos do banco para identificar categorias que o sistema não reconheceu automaticamente.
+    </p>
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <input id="rubrica-termo" type="text" placeholder="Termo (ex: DEBITO AUTOM 12345)"
+        style="flex:1;min-width:200px">
+      <select id="rubrica-cat">
+        <option value="RMC">RMC — Cartão Consignado</option>
+        <option value="RCC">RCC — Reserva Cartão</option>
+        <option value="PARCELA">Parcela Empréstimo</option>
+        <option value="SEGURO">Seguro</option>
+        <option value="TARIFA">Tarifa / Cesta</option>
+        <option value="JUROS">Juros / IOF</option>
+        <option value="CARTAO_CREDITO">Cartão de Crédito</option>
+        <option value="OUTROS">Outros (ignorar)</option>
+      </select>
+      <button class="btn btn-gold" onclick="adicionarRubrica()" style="padding:6px 16px;font-size:12px">+ Adicionar</button>
+    </div>
+    <div id="rubrica-lista" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    <button class="btn" onclick="reaplicarRubricas()"
+      style="margin-top:10px;padding:6px 16px;font-size:12px;background:var(--teal);color:#fff;border:none;border-radius:6px">
+      Reaplicar às transações importadas
+    </button>
+  </div>
+
+  <!-- ═══ ENTRADA MANUAL MÊS A MÊS ═══ -->
+  <div class="card" id="sec-entrada-manual" style="margin-top:16px">
+    <div class="card-title" style="font-size:14px">Entrada Manual — Mês a Mês</div>
+    <p style="font-size:11px;color:var(--muted);margin:0 0 10px">
+      Para períodos sem extrato disponível. Insira data, descrição e valor de cada desconto manualmente.
+    </p>
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
+      <input id="man-data" type="month" title="Competência (mês/ano)">
+      <input id="man-desc" type="text" placeholder="Descrição (ex: CONSIG EMP BANCARIO)"
+        style="flex:1;min-width:180px">
+      <select id="man-cat">
+        <option value="RMC">RMC</option>
+        <option value="RCC">RCC</option>
+        <option value="PARCELA">Parcela</option>
+        <option value="SEGURO">Seguro</option>
+        <option value="TARIFA">Tarifa</option>
+        <option value="JUROS">Juros/IOF</option>
+        <option value="CARTAO_CREDITO">Cartão Crédito</option>
+        <option value="OUTROS">Outros</option>
+      </select>
+      <input id="man-valor" type="number" step="0.01" min="0" placeholder="Valor R$"
+        style="width:110px">
+      <button class="btn btn-gold" onclick="adicionarEntradaManual()" style="padding:6px 16px;font-size:12px">+ Lançar</button>
+    </div>
+    <div id="manual-tabela" style="display:none;margin-top:8px">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);color:var(--muted)">
+            <th style="text-align:left;padding:4px 8px">Competência</th>
+            <th style="text-align:left;padding:4px 8px">Descrição</th>
+            <th style="text-align:left;padding:4px 8px">Categoria</th>
+            <th style="text-align:right;padding:4px 8px">Valor</th>
+            <th style="padding:4px 8px"></th>
+          </tr>
+        </thead>
+        <tbody id="manual-tbody"></tbody>
+      </table>
+      <button class="btn" onclick="importarEntradaManual()"
+        style="margin-top:10px;padding:6px 16px;font-size:12px;background:var(--teal-mid);color:#fff;border:none;border-radius:6px">
+        Enviar para tabela de transações
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ TAB CALCULAR ═══ -->
@@ -1176,8 +1248,9 @@ function renderTransacoes(txns) {
   const cc={RMC:'tag-rmc',RCC:'tag-rmc',BX_FINAN:'tag-bx',TARIFA:'tag-tarifa',SEGURO:'tag-seguro',JUROS:'tag-juros',PARCELA:'tag-parcela',OUTROS:'tag-outros'};
   body.innerHTML=txns.map((t,i)=>{
     const cf=t.confidence>=0.85?'conf-high':t.confidence>=0.65?'conf-med':'conf-low';
-    return`<tr>
-      <td>${t.data}</td>
+    const estiloManual=t._manual?'border-left:3px solid var(--gold);background:rgba(201,169,62,.06)':'';
+    return`<tr style="${estiloManual}">
+      <td>${t.data}${t._manual?'<span title="Lançamento manual" style="color:var(--gold);font-size:9px;margin-left:4px">M</span>':''}</td>
       <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(t.desc)}">${escHtml(t.desc)}</td>
       <td><span class="tag ${cc[t.categoria]||'tag-outros'}">${t.categoria}</span></td>
       <td class="text-right ${t.tipo==='C'?'vc':''}">${t.tipo==='C'?FinancialEngine.fmt(t.valor):''}</td>
@@ -1187,6 +1260,7 @@ function renderTransacoes(txns) {
     </tr>`;
   }).join('');
   body._txns=txns;
+  UIState.lastBatchResults=txns;
   results.classList.remove('hidden');
   // Atualiza totalizador RMC/RCC em tempo real
   body.addEventListener('change',atualizarTotalRMCRCC,{once:false});
@@ -1453,6 +1527,127 @@ const PerfilStorage=(function(){
   }
   return{salvar,carregar,limpar,iniciarListeners};
 })();
+
+// ══════════════════════════════════════════════════════════════════════
+//  TASK-011 — Rubricas Personalizadas + Entrada Manual Mês a Mês
+//  AKE/UFT-1.0 | BUILD: LAADV-20260526 | IC: 1.0 | MÓDULO: ENTRADA_MANUAL
+// ══════════════════════════════════════════════════════════════════════
+UIState.rubricasCustom = [];
+UIState.entradasManuais = [];
+
+function adicionarRubrica() {
+  const termo = document.getElementById('rubrica-termo').value.trim().toUpperCase();
+  const cat = document.getElementById('rubrica-cat').value;
+  if (!termo) return;
+  if (UIState.rubricasCustom.some(r => r.termo === termo)) {
+    document.getElementById('rubrica-termo').value = '';
+    return;
+  }
+  UIState.rubricasCustom.push({ termo, cat });
+  document.getElementById('rubrica-termo').value = '';
+  renderRubricasLista();
+}
+
+function removerRubrica(index) {
+  UIState.rubricasCustom.splice(index, 1);
+  renderRubricasLista();
+}
+
+function renderRubricasLista() {
+  const el = document.getElementById('rubrica-lista');
+  if (!el) return;
+  el.innerHTML = UIState.rubricasCustom.map((r, i) =>
+    `<span style="background:var(--gray-bg);border:1px solid var(--border);border-radius:12px;
+                  padding:3px 10px;font-size:11px;display:inline-flex;align-items:center;gap:6px">
+       <span style="color:var(--teal);font-weight:700">${r.cat}</span>
+       <span>${r.termo}</span>
+       <span onclick="removerRubrica(${i})" style="cursor:pointer;color:var(--danger);font-weight:700">×</span>
+     </span>`
+  ).join('');
+}
+
+function reaplicarRubricas() {
+  if (!UIState.lastBatchResults || !UIState.lastBatchResults.length) {
+    alert('Nenhuma transação importada. Faça upload de um extrato primeiro.');
+    return;
+  }
+  UIState.lastBatchResults = UIState.lastBatchResults.map(txn => {
+    for (const r of UIState.rubricasCustom) {
+      if (txn.desc.toUpperCase().includes(r.termo)) {
+        return { ...txn, categoria: r.cat, confidence: 0.98, _custom: true };
+      }
+    }
+    return txn;
+  });
+  renderTransacoes(UIState.lastBatchResults);
+  kernel.registrarBuild('RUBRICA_CUSTOM', `${UIState.rubricasCustom.length} rubrica(s) aplicada(s)`);
+}
+
+function adicionarEntradaManual() {
+  const dataEl = document.getElementById('man-data');
+  const descEl = document.getElementById('man-desc');
+  const catEl  = document.getElementById('man-cat');
+  const valEl  = document.getElementById('man-valor');
+  const data   = dataEl.value;
+  const desc   = descEl.value.trim();
+  const cat    = catEl.value;
+  const valor  = parseFloat(valEl.value);
+  if (!data || !desc || isNaN(valor) || valor <= 0) {
+    alert('Preencha todos os campos: competência, descrição e valor.');
+    return;
+  }
+  UIState.entradasManuais.push({
+    data: data + '-01',
+    desc: desc.toUpperCase(),
+    tipo: 'D',
+    valor: valor,
+    categoria: cat,
+    confidence: 1.0,
+    _manual: true
+  });
+  descEl.value = '';
+  valEl.value = '';
+  renderEntradaManualTabela();
+}
+
+function removerEntradaManual(index) {
+  UIState.entradasManuais.splice(index, 1);
+  renderEntradaManualTabela();
+}
+
+function renderEntradaManualTabela() {
+  const tbody = document.getElementById('manual-tbody');
+  const tabela = document.getElementById('manual-tabela');
+  if (!tbody) return;
+  if (UIState.entradasManuais.length === 0) {
+    tabela.style.display = 'none';
+    return;
+  }
+  tabela.style.display = 'block';
+  tbody.innerHTML = UIState.entradasManuais.map((e, i) => {
+    const comp = e.data.slice(0, 7);
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:4px 8px">${comp}</td>
+      <td style="padding:4px 8px">${e.desc}</td>
+      <td style="padding:4px 8px;color:var(--teal);font-weight:700">${e.categoria}</td>
+      <td style="padding:4px 8px;text-align:right">R$ ${e.valor.toFixed(2).replace('.',',')}</td>
+      <td style="padding:4px 8px;text-align:center">
+        <span onclick="removerEntradaManual(${i})"
+          style="cursor:pointer;color:var(--danger);font-weight:700">×</span>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function importarEntradaManual() {
+  if (!UIState.entradasManuais.length) return;
+  const existentes = UIState.lastBatchResults || [];
+  const combinadas = [...existentes, ...UIState.entradasManuais];
+  renderTransacoes(combinadas);
+  kernel.registrarBuild('MANUAL_IMPORT', `${UIState.entradasManuais.length} lançamento(s) manual(is) adicionado(s)`);
+  UIState.entradasManuais = [];
+  renderEntradaManualTabela();
+}
 
 // ══════════════════════════════════════════════════════════════════════
 //  BOOT
