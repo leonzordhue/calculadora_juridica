@@ -11,6 +11,7 @@ class CaixaParser {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    if (!pdf || pdf.numPages === 0) return [];
     const itens = [];
     for (let p = 1; p <= pdf.numPages; p++) {
       if (onProgress) onProgress(p, pdf.numPages);
@@ -86,7 +87,7 @@ class CaixaParser {
   _classificar(itens) {
     return itens.map(it => {
       let cat = 'OUTROS', conf = 0.5;
-      const up = it.desc.toUpperCase();
+      const up = typeof normalizarTexto !== 'undefined' ? normalizarTexto(it.desc) : it.desc.toUpperCase();
       for (const [c, kws] of Object.entries(LIBRARY.KEYWORDS)) {
         for (const kw of kws) {
           if (up.includes(kw)) { cat = c; conf = 0.7 + Math.min(kw.length, 12) / 40; break; }

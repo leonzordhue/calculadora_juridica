@@ -15,11 +15,12 @@ const FinancialEngine = Object.freeze({
     const ini = new Date(dataInicio+'T00:00:00');
     const fim = new Date(dataFim+'T00:00:00');
     if (ini>=fim) return 1.0;
-    let fator=1.0, y=ini.getFullYear(), m=ini.getMonth();
+    let fator=1.0, y=ini.getFullYear(), m=ini.getMonth(), mesesAplicados=0;
     while (y<fim.getFullYear()||(y===fim.getFullYear()&&m<=fim.getMonth())) {
       const chave=`${y}-${String(m+1).padStart(2,'0')}`;
       const taxa=tbl[chave];
       if (taxa!==undefined) {
+        mesesAplicados++;
         const dm=new Date(y,m+1,0).getDate();
         let dIni=1,dFim=dm;
         if (y===ini.getFullYear()&&m===ini.getMonth()) dIni=ini.getDate();
@@ -30,6 +31,9 @@ const FinancialEngine = Object.freeze({
         }
       }
       m++; if(m===12){m=0;y++;}
+    }
+    if (mesesAplicados===0 && typeof kernel!=='undefined') {
+      kernel.registrarBuild('IDX_WARN', `acumularIndice(${nomeReal}): nenhum mês disponível em ${dataInicio}→${dataFim} — período fora da base. Fator=1.0`);
     }
     return fator;
   },
@@ -91,8 +95,15 @@ function monthsBetween(d1, d2) {
 
 
 function calcPMT(pv, iMensal, n) {
+  if(!n || n<=0) return 0;
   if(iMensal===0) return pv/n;
   return pv*iMensal/( 1-Math.pow(1+iMensal,-n) );
+}
+
+function normalizarTexto(str) {
+  return (str || '').toUpperCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
 }
 
 /** Calcula conversão consignado e exibe resultado comparativo */
@@ -101,3 +112,4 @@ function calcPMT(pv, iMensal, n) {
 window.FinancialEngine = FinancialEngine;
 window.monthsBetween = monthsBetween;
 window.calcPMT = calcPMT;
+window.normalizarTexto = normalizarTexto;

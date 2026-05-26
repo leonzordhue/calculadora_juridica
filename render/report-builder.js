@@ -223,9 +223,9 @@ function limparRelatorio(){
 }
 
 function exportarPDF(){
+  if(!window.jspdf?.jsPDF){alert('jsPDF não carregado. Verifique a conexão.');return;}
   gerarRelatorio();
   const {jsPDF}=window.jspdf;
-  if(!jsPDF){alert('jsPDF não carregado. Verifique a conexão.');return;}
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   doc.setFont('helvetica');
   doc.setFontSize(16);doc.setTextColor(11,74,68);

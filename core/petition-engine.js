@@ -2,6 +2,8 @@
 'use strict';
 
 function numExtenso(valor){
+  if(valor<0) return 'valor negativo — verifique os dados';
+  if(!isFinite(valor)||isNaN(valor)) return 'valor inválido';
   const u=['','um','dois','três','quatro','cinco','seis','sete','oito','nove',
            'dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
   const d=['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
