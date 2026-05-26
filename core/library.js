@@ -106,6 +106,53 @@ const LIBRARY = Object.freeze({
     CARTAO_CREDITO:['GASTOS CARTAO DE CREDITO','PAGTO CARTAO','PAGAMENTO CARTAO','DEB CARTAO','FATURA CARTAO','OUROCARD','CARTAO VISA','CARTAO ELO','FAT CARTAO']
   }),
 
+  RUBRICS: Object.freeze([
+    /* ── ordem: mais específico → mais genérico ── */
+
+    // Cartão / crédito consignado
+    ['RMC',                    Object.freeze(['RMC','RESERVA DE MARGEM','CARTAO CONSIGNADO','CONSIG CART','CRED CONSIG CART','RES MARG CART','RESERVA MARG CONS'])],
+    ['RCC',                    Object.freeze(['RCC','RESERVA CARTAO','CART CONSIG','CONSIGNADO CARTAO','CARTAO CONSIG','CONSIG CARTAO','CONSIGNACAO CARTAO','RCC CARTAO','DEB CART CONSIG'])],
+
+    // Seguro — específico antes do genérico
+    ['SEGURO_CARTAO',          Object.freeze(['SEGURO CARTAO','SEG CARTAO','PROTECAO CARTAO','ASSIST CARTAO','SEGURO CREDITO','SEG CAPIT','SEGPREST','SEG PREST'])],
+    ['VIDA_PREV',              Object.freeze(['SEG VIDA','SEGURO VIDA','VIDA PREV','PREVIDENCIA','PREV PRIVADA','VIDA E PREV','PGTO PREVIDENCIA'])],
+    ['SLN',                    Object.freeze(['SLN','SEGURO LIQUIDACAO','SEG LIQ','LIQUIDACAO CREDITO','LIQ CREDITO SEG','SEGURO LIQ'])],
+    ['SEGURO',                 Object.freeze(['SEGURO','PRESTAMISTA','PREMIO SEGURO'])],
+
+    // Mora — específico antes do genérico
+    ['MORA_CEL',               Object.freeze(['MORA CELULAR','MULTA CELULAR','ATRASO CEL','MORA CEL','MORA TEL'])],
+    ['MORA',                   Object.freeze(['MORA','MULTA ATRASO','ENCARGO ATRASO','ENC MORA','MORA ATRASO'])],
+
+    // Juros — específico antes do genérico
+    ['JUROS_NC',               Object.freeze(['JUROS NC','JRS NC','JUROS NAO COMP','JRS NAO COMPENSADOS','ENCARGOS NC','JUROS NAO CONSIG'])],
+    ['JUROS_ABUSIVOS',         Object.freeze(['JUROS ABUSIVO','JRS ABUSIVO','JUROS EXCESSO','COBRANCA JUROS ABUSIVO'])],
+
+    // Tarifa — específico antes do genérico
+    ['TARIFA_CAD',             Object.freeze(['TARIFA CADASTRO','TAR CADASTRO','TAXA CADASTRO','TAR CAD','TARIFA CAD','CADASTRO OPERACAO'])],
+    ['TARIFA_IND',             Object.freeze(['TARIFA INDEVIDA','TAR INDEVIDA','TARIFA IND'])],
+    ['CESTA',                  Object.freeze(['CESTA','CESTA BASICA','CESTA SERVICO','CESTA DE SERVICO','MENSALIDADE PACOTE','CLUBE BENEFICIO','CLUBE DE BENEFICIOS','CESTA SERVICOS'])],
+
+    // Anuidade — específico antes do genérico
+    ['ANP',                    Object.freeze(['ANP','ANUIDADE PARCELADA','PARC ANUIDADE','ANUIDADE PARC'])],
+    ['ANUIDADE',               Object.freeze(['ANUIDADE','ANUIDADE CARTAO','TAXA ANUAL CARTAO','TAXA ANUAL'])],
+
+    // Outros produtos e cobranças
+    ['GASTO_C_CRED',           Object.freeze(['GASTOS CARTAO DE CREDITO','PAGTO CARTAO','PAGAMENTO CARTAO','DEB CARTAO','FATURA CARTAO','OUROCARD','CARTAO VISA','CARTAO ELO','FAT CARTAO','GASTO CRED'])],
+    ['TIT_CAP',                Object.freeze(['TIT CAP','TITULO CAPITALIZACAO','CAPITALIZACAO','CAP TITULO','CAPITALIZAR','RESGATE CAP'])],
+    ['SVA',                    Object.freeze(['SVA','SERVICO VALOR ADICIONADO','VALOR ADICIONADO','SERVICO ADICIONAL','ADICIONAL SERVICO','PROTECAO'])],
+    ['COBRANCA_IND',           Object.freeze(['COBRANCA INDEVIDA','COB IND','DEBITO INDEVIDO','LANCAMENTO INDEVIDO'])],
+    ['CARREGADOR_VENDA_CASADA',Object.freeze(['VENDA CASADA','CARREGADOR','PRODUTO VINCULADO','PACOTE VINCULADO','VENDA ATRELADA'])],
+    ['ESPECIFICA',             Object.freeze(['ESPECIFICA','COBRANCA ESP','LANCAMENTO ESP','COBRANCA ESPECIFICA'])],
+    ['INV_FACIL',              Object.freeze(['INVESTIMENTO FACIL','INV FACIL','APLIC AUTOMATICA','APLICACAO FACIL'])],
+    ['COI_BOLETO',             Object.freeze(['COI','BOLETO','PAGAMENTO BOLETO','PAGTO BOLETO','COBRANCA BOLETO','PGTO BOLETO'])],
+
+    // Financiamento e crédito pessoal
+    ['BX_ANT_FIN',             Object.freeze(['BX ANT.FINAN','BX.ANT.FINANC','BAIXA ANTECIPADA','LIQ ANT FIN','QUITACAO ANTECIP','LIQUIDACAO ANTECIPADA'])],
+    ['AD_DEPOSITANTE',         Object.freeze(['ADIANT.DEPOSITANTE','AD DEPOSITANTE','ADIANTAMENTO DEPOSITANTE','CHEQUE ESPECIAL','LIMITE ESPECIAL'])],
+    ['PARC_CRED_PESS',         Object.freeze(['CREDITO PESSOAL','EMPR PESSOAL','EMPRÉST','CRED PESSOAL','PARCELA EMPRESTIMO','PARC EMP','CONSIG EMP'])],
+    ['REFINANCIAMENTO_IND',    Object.freeze(['REFINANCIAMENTO','REFIN','REFI EMP','RENEGOCIACAO','REPERFILAMENTO','REESTRUTURACAO'])]
+  ]),
+
   JURIDICO: Object.freeze({
     LEI_14905_SPLIT: '2024-08-30',
     TAXA_MORA_PRE: 1.0,
