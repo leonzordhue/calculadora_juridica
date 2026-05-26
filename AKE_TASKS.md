@@ -21,6 +21,7 @@
 | TASK-010 | Parsers Itaú+BB+Caixa + KEYWORDS expandido | claude-work | done | ALTA |
 | TASK-011 | Rubrica Manual + Entrada Mês a Mês | claude-work | done | ALTA |
 | TASK-012 | UI Polish: Dark Mode + Header limpo + Abas | claude-work | done | ALTA |
+| TASK-013 | Classificação por Rubricas Jurídicas (27 códigos) | claude-work | ready | ALTA |
 
 > TASK-011 depende de TASK-010 estar integrada em main (usa UIState.lastBatchResults).
 > TASK-008, 009, 010 podem ser executadas em qualquer ordem — arquivos não conflitam entre si.
