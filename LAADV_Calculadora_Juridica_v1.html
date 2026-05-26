@@ -260,6 +260,7 @@ details[open] #trace-arrow{transform:rotate(90deg)}
             <th style="width:90px">Data</th>
             <th>Descrição</th>
             <th>Categoria</th>
+            <th style="width:120px">Rubrica</th>
             <th class="text-right" style="width:110px">Crédito</th>
             <th class="text-right" style="width:110px">Débito</th>
             <th style="width:60px">Conf.</th>
@@ -1266,6 +1267,7 @@ function renderTransacoes(txns) {
   const chips=document.getElementById('summary-chips');
   const results=document.getElementById('extrato-results');
   const counts={};
+  txns.forEach(t=>{ if(!t.rubrica) t.rubrica=classificarRubrica(t.desc); });
   txns.forEach(t=>{counts[t.categoria]=(counts[t.categoria]||0)+1;});
   chips.innerHTML=Object.entries(counts).map(([c,n])=>`<span class="tag-count">${c} <strong>${n}</strong></span>`).join('');
   const cc={RMC:'tag-rmc',RCC:'tag-rmc',BX_FINAN:'tag-bx',TARIFA:'tag-tarifa',SEGURO:'tag-seguro',JUROS:'tag-juros',PARCELA:'tag-parcela',OUTROS:'tag-outros'};
@@ -1276,6 +1278,7 @@ function renderTransacoes(txns) {
       <td>${t.data}${t._manual?'<span title="Lançamento manual" style="color:var(--gold);font-size:9px;margin-left:4px">M</span>':''}</td>
       <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(t.desc)}">${escHtml(t.desc)}</td>
       <td><span class="tag ${cc[t.categoria]||'tag-outros'}">${t.categoria}</span></td>
+      <td style="font-size:11px;font-family:'Courier New',monospace;color:var(--txt-detalhe);white-space:nowrap">${t.rubrica||'—'}</td>
       <td class="text-right ${t.tipo==='C'?'vc':''}">${t.tipo==='C'?FinancialEngine.fmt(t.valor):''}</td>
       <td class="text-right ${t.tipo==='D'?'vd':''}">${t.tipo==='D'?FinancialEngine.fmt(t.valor):''}</td>
       <td class="${cf}">${(t.confidence*100).toFixed(0)}%</td>
@@ -1569,6 +1572,15 @@ function alternarTema() {
     if (btn) btn.textContent = '☀ Claro';
     try { localStorage.setItem('laadv_tema', 'escuro'); } catch(e) {}
   }
+}
+
+function classificarRubrica(desc) {
+  if (!desc || !LIBRARY.RUBRICS) return '';
+  const d = desc.toUpperCase();
+  for (const [codigo, padroes] of LIBRARY.RUBRICS) {
+    if (padroes.some(p => d.includes(p))) return codigo;
+  }
+  return '';
 }
 
 // ══════════════════════════════════════════════════════════════════════
