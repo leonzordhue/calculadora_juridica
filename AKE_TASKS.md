@@ -16,8 +16,14 @@
 | TASK-005 | AKEKernel Supervisor Real (IC blocker) | claude-work | done | MEDIA |
 | TASK-006 | Sanity Tests (numExtenso/calcPMT/acumular) | claude-work | done | MEDIA |
 | TASK-007 | LIBRARY._meta — Versionamento de Fontes | principal | done | BAIXA |
+| TASK-008 | Modo Noturno (dark mode toggle) | claude-work | ready | MEDIA |
+| TASK-009 | Terceiro Escritório LAADV/AM | claude-work | ready | MEDIA |
+| TASK-010 | Parsers Itaú+BB+Caixa + KEYWORDS expandido | claude-work | ready | ALTA |
+| TASK-011 | Rubrica Manual + Entrada Mês a Mês | claude-work | ready | ALTA |
 
-> TASK-004 blocked: depende de TASK-003 (template inicial primeiro, depois impugnação).
+> TASK-011 depende de TASK-010 estar integrada em main (usa UIState.lastBatchResults).
+> TASK-008, 009, 010 podem ser executadas em qualquer ordem — arquivos não conflitam entre si.
+> Ordem recomendada de integração: 008 → 009 → 010 → 011.
 
 ---
 
