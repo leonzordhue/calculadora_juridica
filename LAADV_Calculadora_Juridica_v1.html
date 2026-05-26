@@ -254,6 +254,13 @@ details[open] #trace-arrow{transform:rotate(90deg)}
     <div class="card">
       <div class="card-title">📊 Transações Classificadas</div>
       <div id="summary-chips" class="flex mt8" style="flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
+      <div id="rubrica-filter-wrap" style="display:none;align-items:center;gap:8px;margin-bottom:10px">
+        <label style="font-size:12px;color:var(--txt-detalhe)">Filtrar rubrica:</label>
+        <select id="rubrica-filter" onchange="filtrarPorRubrica(this.value)"
+          style="font-size:12px;padding:4px 8px;border:1px solid var(--border-input);border-radius:6px;background:var(--bg-input);color:var(--txt-principal)">
+          <option value="">Todas as rubricas</option>
+        </select>
+      </div>
       <div style="overflow-x:auto">
         <table class="data-table" id="txn-table">
           <thead><tr>
@@ -1271,25 +1278,50 @@ function renderTransacoes(txns) {
   txns.forEach(t=>{counts[t.categoria]=(counts[t.categoria]||0)+1;});
   chips.innerHTML=Object.entries(counts).map(([c,n])=>`<span class="tag-count">${c} <strong>${n}</strong></span>`).join('');
   const cc={RMC:'tag-rmc',RCC:'tag-rmc',BX_FINAN:'tag-bx',TARIFA:'tag-tarifa',SEGURO:'tag-seguro',JUROS:'tag-juros',PARCELA:'tag-parcela',OUTROS:'tag-outros'};
-  body.innerHTML=txns.map((t,i)=>{
-    const cf=t.confidence>=0.85?'conf-high':t.confidence>=0.65?'conf-med':'conf-low';
-    const estiloManual=t._manual?'border-left:3px solid var(--gold);background:rgba(201,169,62,.06)':'';
-    return`<tr style="${estiloManual}">
-      <td>${t.data}${t._manual?'<span title="Lançamento manual" style="color:var(--gold);font-size:9px;margin-left:4px">M</span>':''}</td>
-      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(t.desc)}">${escHtml(t.desc)}</td>
-      <td><span class="tag ${cc[t.categoria]||'tag-outros'}">${t.categoria}</span></td>
-      <td style="font-size:11px;font-family:'Courier New',monospace;color:var(--txt-detalhe);white-space:nowrap">${t.rubrica||'—'}</td>
-      <td class="text-right ${t.tipo==='C'?'vc':''}">${t.tipo==='C'?FinancialEngine.fmt(t.valor):''}</td>
-      <td class="text-right ${t.tipo==='D'?'vd':''}">${t.tipo==='D'?FinancialEngine.fmt(t.valor):''}</td>
-      <td class="${cf}">${(t.confidence*100).toFixed(0)}%</td>
-      <td><input type="checkbox" class="txn-cb" data-idx="${i}" style="width:auto;accent-color:var(--teal)" ${['RMC','RCC','SEGURO','BX_FINAN'].includes(t.categoria)?'checked':''}></td>
-    </tr>`;
-  }).join('');
+  if (!txns.length) {
+    body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--txt-detalhe);padding:24px">Nenhuma transação encontrada. Verifique se o PDF é compatível.</td></tr>';
+  } else {
+    body.innerHTML=txns.map((t,i)=>{
+      const cf=t.confidence>=0.85?'conf-high':t.confidence>=0.65?'conf-med':'conf-low';
+      const estiloManual=t._manual?'border-left:3px solid var(--gold);background:rgba(201,169,62,.06)':'';
+      return`<tr style="${estiloManual}">
+        <td>${t.data}${t._manual?'<span title="Lançamento manual" style="color:var(--gold);font-size:9px;margin-left:4px">M</span>':''}</td>
+        <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(t.desc)}">${escHtml(t.desc)}</td>
+        <td><span class="tag ${cc[t.categoria]||'tag-outros'}">${t.categoria}</span></td>
+        <td style="font-size:11px;font-family:'Courier New',monospace;color:var(--txt-detalhe);white-space:nowrap">${t.rubrica||'—'}</td>
+        <td class="text-right ${t.tipo==='C'?'vc':''}">${t.tipo==='C'?FinancialEngine.fmt(t.valor):''}</td>
+        <td class="text-right ${t.tipo==='D'?'vd':''}">${t.tipo==='D'?FinancialEngine.fmt(t.valor):''}</td>
+        <td class="${cf}">${(t.confidence*100).toFixed(0)}%</td>
+        <td><input type="checkbox" class="txn-cb" data-idx="${i}" style="width:auto;accent-color:var(--teal)" ${['RMC','RCC','SEGURO','BX_FINAN'].includes(t.categoria)?'checked':''}></td>
+      </tr>`;
+    }).join('');
+  }
   body._txns=txns;
   UIState.lastBatchResults=txns;
   results.classList.remove('hidden');
-  // Atualiza totalizador RMC/RCC em tempo real
-  body.addEventListener('change',atualizarTotalRMCRCC,{once:false});
+  // Chips de rubrica — segunda linha abaixo da categoria
+  const rubricaCounts={};
+  txns.forEach(t=>{ if(t.rubrica) rubricaCounts[t.rubrica]=(rubricaCounts[t.rubrica]||0)+1; });
+  const rubricaChipsHtml=Object.keys(rubricaCounts).length
+    ?'<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-card)">'+
+      Object.entries(rubricaCounts).map(([r,n])=>`<span class="tag-count" style="font-family:\'Courier New\',monospace;font-size:10px">${r} <strong>${n}</strong></span>`).join('')+
+      '</div>':'';
+  chips.innerHTML+=rubricaChipsHtml;
+  // Popula filtro de rubrica
+  const filterWrap=document.getElementById('rubrica-filter-wrap');
+  const filterSel=document.getElementById('rubrica-filter');
+  if(filterWrap&&filterSel){
+    const rubricas=[...new Set(txns.map(t=>t.rubrica).filter(Boolean))].sort();
+    if(rubricas.length){
+      filterSel.innerHTML='<option value="">Todas as rubricas</option>'+rubricas.map(r=>`<option value="${r}">${r}</option>`).join('');
+      filterWrap.style.display='flex';
+    } else {
+      filterWrap.style.display='none';
+    }
+  }
+  // Atualiza totalizador RMC/RCC em tempo real — removeEventListener evita acumulação entre imports
+  body.removeEventListener('change',atualizarTotalRMCRCC);
+  body.addEventListener('change',atualizarTotalRMCRCC);
   atualizarTotalRMCRCC();
 }
 
@@ -1305,6 +1337,9 @@ function enviarParaCalcular(){
   const sel=[];
   document.querySelectorAll('.txn-cb:checked').forEach(cb=>{const t=txns[parseInt(cb.dataset.idx)];if(t)sel.push(t);});
   if(!sel.length){alert('Selecione ao menos uma transação.');return;}
+  if(sel.length>1){
+    kernel.registrarBuild('UI_WARN',`${sel.length} transações selecionadas — apenas a primeira enviada ao Calcular Individual. Use "Calcular em Lote" para processar todas.`);
+  }
   const t=sel[0];
   document.getElementById('c-tipo').value=t.categoria;
   document.getElementById('c-inicio').value=t.data;
@@ -1576,11 +1611,22 @@ function alternarTema() {
 
 function classificarRubrica(desc) {
   if (!desc || !LIBRARY.RUBRICS) return '';
-  const d = desc.toUpperCase();
+  const d = typeof normalizarTexto !== 'undefined' ? normalizarTexto(desc) : desc.toUpperCase();
   for (const [codigo, padroes] of LIBRARY.RUBRICS) {
     if (padroes.some(p => d.includes(p))) return codigo;
   }
   return '';
+}
+
+function filtrarPorRubrica(rubrica) {
+  const body=document.getElementById('txn-body');
+  const txns=body._txns||[];
+  Array.from(body.querySelectorAll('tr')).forEach(tr=>{
+    const cb=tr.querySelector('.txn-cb');
+    if(!cb){tr.style.display='';return;}
+    const t=txns[parseInt(cb.dataset.idx)];
+    tr.style.display=(!rubrica||(t&&t.rubrica===rubrica))?'':'none';
+  });
 }
 
 // ══════════════════════════════════════════════════════════════════════

@@ -176,15 +176,32 @@ async function buscarTaxaMedia() {
     return;
   }
 
+  if (!navigator.onLine) {
+    infoEl.textContent='';
+    alert('Sem conexão com a internet. A taxa média BACEN não pode ser consultada offline.');
+    return;
+  }
   infoEl.textContent='Consultando BACEN...';
   const url=`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${cfg.sgsCodigo}/dados?formato=json&dataInicial=${iniSGS}&dataFinal=${fimSGS}`;
   try {
     kernel.registrarBuild('BACEN',`SGS ${cfg.sgsCodigo} · ${iniSGS} → ${fimSGS}`);
-    const resp=await fetch(url);
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),12000);
+    let resp;
+    try {
+      resp=await fetch(url,{signal:ctrl.signal});
+      clearTimeout(timer);
+    } catch(err) {
+      clearTimeout(timer);
+      if(err.name==='AbortError') throw new Error('Timeout: API BACEN não respondeu em 12s. Tente novamente.');
+      throw err;
+    }
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const dados=await resp.json();
     if(!dados.length) throw new Error('Sem dados para o período informado — verifique a data do saque');
-    const media=dados.reduce((s,d)=>s+parseFloat(d.valor),0)/dados.length;
+    const validos=dados.filter(d=>!isNaN(parseFloat(d.valor)));
+    if(!validos.length) throw new Error('Nenhum dado válido retornado pela API BACEN.');
+    const media=validos.reduce((s,d)=>s+parseFloat(d.valor),0)/validos.length;
     document.getElementById('tm-taxa-manual').value=media.toFixed(4);
     // Nota metodológica: explica diferença SGS vs relatório histórico pontual
     infoEl.innerHTML=`

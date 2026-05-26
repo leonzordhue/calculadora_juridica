@@ -55,7 +55,7 @@ class BradescoParser {
   _classify(itens) {
     return itens.map(it=>{
       let cat='OUTROS',conf=0.5;
-      const up=it.desc.toUpperCase();
+      const up=typeof normalizarTexto!=='undefined'?normalizarTexto(it.desc):it.desc.toUpperCase();
       for(const[c,kws]of Object.entries(LIBRARY.KEYWORDS)){
         for(const kw of kws){ if(up.includes(kw)){cat=c;conf=0.7+Math.min(kw.length,12)/40;break;} }
         if(cat!=='OUTROS')break;

@@ -118,8 +118,11 @@ class INSSParser {
         cat=LIBRARY.INSS_CODES[it._code];
         conf=0.95;
       } else {
+        if(it._code && !LIBRARY.INSS_CODES[it._code] && typeof kernel!=='undefined') {
+          kernel.registrarBuild('IDX_WARN',`Rubrica INSS desconhecida: código ${it._code} — classificado via keywords`);
+        }
         // Prioridade 2: keywords (fallback)
-        const up=it.desc.toUpperCase();
+        const up=typeof normalizarTexto!=='undefined'?normalizarTexto(it.desc):it.desc.toUpperCase();
         for(const[c,kws] of Object.entries(LIBRARY.KEYWORDS)){
           for(const kw of kws){ if(up.includes(kw)){cat=c;conf=0.75;break;} }
           if(cat!=='OUTROS')break;
@@ -159,13 +162,14 @@ async function detectarTipo(file) {
       return 'ITAU';
     }
     // Banco do Brasil
-    if (texto.includes('EXTRATO DE CONTA CORRENTE') &&
-        (texto.includes('HISTÓRICO') || texto.includes('HISTORICO')) &&
-        texto.includes('LOTE')) {
+    if ((texto.includes('BANCO DO BRASIL') ||
+         (texto.includes('EXTRATO DE CONTA CORRENTE') &&
+          (texto.includes('HISTÓRICO') || texto.includes('HISTORICO')) &&
+          texto.includes('LOTE')))) {
       return 'BB';
     }
-    // Caixa Econômica Federal
-    if (texto.includes('CAIXA') &&
+    // Caixa Econômica Federal — exige marcador específico para evitar falso positivo
+    if ((texto.includes('CAIXA ECONOMICA') || texto.includes('CAIXA FEDERAL') || texto.includes('CAIXA ECONÔMICA')) &&
         (texto.includes('INTERNET BANKING') || texto.includes('EXTRATO POR PER'))) {
       return 'CAIXA';
     }
