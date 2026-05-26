@@ -20,6 +20,7 @@
 | TASK-009 | Terceiro Escritório LAADV/AM | claude-work | done | MEDIA |
 | TASK-010 | Parsers Itaú+BB+Caixa + KEYWORDS expandido | claude-work | done | ALTA |
 | TASK-011 | Rubrica Manual + Entrada Mês a Mês | claude-work | done | ALTA |
+| TASK-012 | UI Polish: Dark Mode + Header limpo + Abas | claude-work | ready | ALTA |
 
 > TASK-011 depende de TASK-010 estar integrada em main (usa UIState.lastBatchResults).
 > TASK-008, 009, 010 podem ser executadas em qualquer ordem — arquivos não conflitam entre si.
@@ -390,10 +391,53 @@ LIBRARY._meta = Object.freeze({
 
 ---
 
+## TASK-012 — UI Polish: Dark Mode + Header Limpo + Abas
+
+```
+status: ready
+agent: claude-work
+branch: claude/work-ui-polish
+prioridade: ALTA
+arquivos_leitura:
+  - PROMPT_CLAUDE_WORK_TASK_012.md
+  - LAADV_Calculadora_Juridica_v1.html
+arquivos_saida:
+  - LAADV_Calculadora_Juridica_v1.html
+arquivos_proibidos:
+  - core/*, io/*, render/*
+```
+
+### Objetivo
+Três correções visuais identificadas na v1.9.0:
+1. Dark mode não funciona — CSS vars existem mas regras usam valores hardcoded
+2. Header expõe métricas internas (Q=, IC=, AKE/UFT-1.0) — remover para usuários finais
+3. Ordem das abas errada e nome da plataforma inadequado para advogados
+
+### Especificação Completa
+Ver `PROMPT_CLAUDE_WORK_TASK_012.md`
+
+### Critério de Aceite
+- [ ] Toggle escuro/claro muda visualmente fundo, cards e inputs
+- [ ] Preferência persiste após F5
+- [ ] Q=, IC=, AKE/UFT-1.0 não aparecem no header
+- [ ] Título: "LAADV — Calculadora Jurídica v1.9.0"
+- [ ] Abas: Extratos · Calcular · Comparativo · Relatório · Peças · Sistema
+- [ ] Sem erros no console
+- [ ] Tema claro idêntico ao v1.9.0
+
+### Status de Execução
+- [ ] Dark mode corrigido
+- [ ] Header limpo
+- [ ] Renomeação concluída
+- [ ] Abas reordenadas
+- [ ] PR aberto contra main
+
+---
+
 ## Histórico de Tasks Concluídas
 
 *(Nenhuma ainda — primeira versão do sistema de tasks)*
 
 ---
 
-*AKE/UFT-1.0 | BUILD: LAADV-20260524 | IC: 1.0 | MÓDULO: AKE_TASKS*
+*AKE/UFT-1.0 | BUILD: LAADV-20260526 | IC: 1.0 | MÓDULO: AKE_TASKS*
