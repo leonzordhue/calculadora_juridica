@@ -1182,27 +1182,6 @@ details[open] #trace-arrow{transform:rotate(90deg)}
     <button class="btn btn-outline" onclick="inspecionar()">Inspecionar</button>
     <div id="insp-result" class="mt16"></div>
   </div>
-  <div class="card" id="backend-config-card">
-    <div class="card-title">🔗 Backend de Auditoria</div>
-    <p style="font-size:12px;color:var(--txt-detalhe);margin-bottom:12px">
-      Registra documentos gerados no Google Drive e Google Sheets.
-      Cole a URL do Web App após implantar o Apps Script.
-    </p>
-    <div class="form-row cols-2">
-      <div>
-        <label>URL do Web App (Google Apps Script)</label>
-        <input type="url" id="backend-url-input" placeholder="https://script.google.com/macros/s/..."
-          style="font-size:12px"
-          oninput="salvarBackendUrl(this.value)">
-      </div>
-      <div style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn btn-outline" onclick="testarBackend()" style="margin-bottom:0">
-          🔌 Testar Conexão
-        </button>
-        <span id="backend-status" style="font-size:11px;color:var(--txt-detalhe)"></span>
-      </div>
-    </div>
-  </div>
   <div class="card">
     <div class="card-title">📋 Build Log — Append-Only (1ª Lei AKE)</div>
     <div class="log-viewer" id="build-log"></div>
@@ -1615,12 +1594,10 @@ const PerfilStorage=(function(){
 //  TASK-015 — Backend LAADV · Google Apps Script Web App
 //  AKE/UFT-1.0 | BUILD: LAADV-20260526 | IC: 1.0 | MÓDULO: BACKEND
 // ══════════════════════════════════════════════════════════════════════
-const LAADV_BACKEND_URL = (function(){
-  try { return localStorage.getItem('laadv_backend_url') || ''; } catch(e){ return ''; }
-})();
+const LAADV_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbycz3KwJomR0yUhF6r2P1mb6faT55-N--FIfR4FcJd9F-61QRXTMlF2m1kaiECf-z9SoQ/exec';
 
 async function registrarDocumento(tipo, nome, b64, mime, metadata) {
-  const url = LAADV_BACKEND_URL || localStorage.getItem('laadv_backend_url') || '';
+  const url = LAADV_BACKEND_URL;
   if (!url) return;
   try {
     const resp = await fetch(url, {
@@ -1644,27 +1621,6 @@ function bufferParaBase64(buffer) {
   let bin = '';
   bytes.forEach(b => bin += String.fromCharCode(b));
   return btoa(bin);
-}
-
-function salvarBackendUrl(url) {
-  try { localStorage.setItem('laadv_backend_url', url.trim()); } catch(e) {}
-}
-
-async function testarBackend() {
-  const url = document.getElementById('backend-url-input')?.value?.trim() || '';
-  const status = document.getElementById('backend-status');
-  if (!url) { if(status) status.textContent = '⚠ URL não preenchida'; return; }
-  if(status) status.textContent = '⏳ Testando...';
-  try {
-    const resp = await fetch(url, { method:'GET' });
-    const json = await resp.json();
-    if (json.ok && status) {
-      status.textContent = '✅ Conectado — ' + (json.servico || 'OK');
-      status.style.color = 'var(--success)';
-    }
-  } catch(e) {
-    if(status) { status.textContent = '❌ ' + e.message; status.style.color = 'var(--danger)'; }
-  }
 }
 
 async function exportarPeticaoComBackend() {
@@ -1939,11 +1895,6 @@ function importarEntradaManual() {
   kernel.registrarBuild('BACEN',`SGS ${LIBRARY.BACEN_SGS.INSS.sgsCodigo}(INSS) / ${LIBRARY.BACEN_SGS.PUBLICO.sgsCodigo}(Público) / ${LIBRARY.BACEN_SGS.PRIVADO.sgsCodigo}(Privado) · CORS habilitado`);
   kernel.registrarBuild('STATUS','Sistema operacional · Aguardando operação');
   updateKernelMetrics();
-  // Restaura URL do backend se salva
-  const backendInput = document.getElementById('backend-url-input');
-  if (backendInput) {
-    try { backendInput.value = localStorage.getItem('laadv_backend_url') || ''; } catch(e) {}
-  }
 })();
 </script>
 </body>
