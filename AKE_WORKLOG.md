@@ -35,6 +35,26 @@
 
 ## Log de Builds
 
+### v1.9.4 — TASK-015: Backend Google Apps Script
+- **Data**: 26/mai/2026
+- **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — auditoria e integração
+- **Mudanças**:
+  - `backend/laadv_backend.gs`: Web App completo — `doPost` (upload Drive + log Sheets), `doGet` (health check), `garantirSetup` (cria abas com cabeçalho verde LAADV na primeira execução), `registrarNaPlanilha` (4 abas: Petições, Relatórios, Memória de Cálculo, Log Geral), `obterOuCriarSubpasta` (pastas dinâmicas no Drive)
+  - `LAADV_BACKEND_URL`: constante IIFE lida do localStorage ao boot
+  - `registrarDocumento(tipo, nome, b64, mime, metadata)`: async, fire-and-forget — fetch POST para Apps Script com `Content-Type: text/plain` (evita preflight CORS); erros logados no kernel sem bloquear o usuário
+  - `bufferParaBase64(buffer)`: conversão ArrayBuffer → base64
+  - `salvarBackendUrl(url)`: persiste URL no localStorage ao digitar
+  - `testarBackend()`: GET na URL configurada, exibe ✅/❌ com cor dinâmica
+  - Card "Backend de Auditoria" na aba Sistema: campo URL + botão Testar Conexão
+  - Restauração da URL do backend no IIFE de inicialização
+  - 4 wrappers `*ComBackend()`: PDF petição, RTF petição, relatório PDF, memória de cálculo (PDF)
+  - 7 `onclick` substituídos (2× exportarPeticaoPDF, 2× exportarPeticaoRTF, 1× exportarPDF, 2× gerarFundamentoPDF)
+  - `b64 = null` nos wrappers — só metadados no Sheets (sem tocar render/); upload Drive ativado automaticamente se Apps Script retornar o conteúdo
+- **Axiomas afetados**: A3 (toda geração de documento agora logada no kernel via BACKEND/BACKEND_ERR)
+- **IC final**: 1.0
+
+---
+
 ### v1.9.3 — TASK-014: Deep Audit
 - **Data**: 26/mai/2026
 - **Agente**: Claude-Work (Opus 4.7) — execução | Principal (Sonnet) — auditoria e integração

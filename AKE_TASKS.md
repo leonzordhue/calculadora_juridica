@@ -23,7 +23,7 @@
 | TASK-012 | UI Polish: Dark Mode + Header limpo + Abas | claude-work | done | ALTA |
 | TASK-013 | Classificação por Rubricas Jurídicas (27 códigos) | claude-work | done | ALTA |
 | TASK-014 | Deep Audit: Bug Hunt, Crash Prevention, Melhorias | claude-work | done | CRÍTICA |
-| TASK-015 | Integração Backend Google Apps Script — Drive + Sheets | claude-work | ready | ALTA |
+| TASK-015 | Integração Backend Google Apps Script — Drive + Sheets | claude-work | done | ALTA |
 
 > TASK-011 depende de TASK-010 estar integrada em main (usa UIState.lastBatchResults).
 > TASK-008, 009, 010 podem ser executadas em qualquer ordem — arquivos não conflitam entre si.
@@ -478,12 +478,12 @@ Web App pelo operador. O HTML precisa de:
 - [ ] Sem regressão nos exports — downloads continuam funcionando
 
 ### Status de Execução
-- [ ] Spec lida e analisada
-- [ ] Constante + funções base adicionadas ao HTML
-- [ ] Card de configuração inserido na aba Sistema
-- [ ] Wrappers de export criados
-- [ ] onclick dos botões atualizados
-- [ ] PR aberto contra main
+- [x] Spec lida e analisada
+- [x] Constante + funções base adicionadas ao HTML
+- [x] Card de configuração inserido na aba Sistema
+- [x] Wrappers de export criados
+- [x] onclick dos botões atualizados
+- [x] Integrado em main (v1.9.4)
 
 ---
 
