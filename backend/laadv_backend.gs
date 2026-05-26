@@ -9,16 +9,23 @@
  * DEPLOY:
  *   Apps Script → Implantar → Nova implantação
  *   Tipo: App da Web
- *   Executar como: Eu (leonzord90@gmail.com)
+ *   Executar como: Eu
  *   Quem pode acessar: Qualquer pessoa
+ *
+ * PRIMEIRA EXECUÇÃO:
+ *   Execute setupManual() no editor — cria planilha e pasta no Drive automaticamente.
+ *   Após executar, veja o Log (Ctrl+Enter) para obter os links.
  */
 
 // ══════════════════════════════════════════════════════════════
-// CONFIGURAÇÃO — altere apenas os IDs abaixo
+// CONFIGURAÇÃO
+// IDs opcionais — se vazios, o backend cria os recursos automaticamente
 // ══════════════════════════════════════════════════════════════
 const CFG = {
-  DRIVE_FOLDER_ID : '1mYJcJ8pcmsfvsJnmrdtgJ8j6sWsfCWIi',
-  SHEET_ID        : '1gbFEeiEI-bhUde9gKg7OYL1RN2q885tJBdqU18wPxw8',
+  // Deixe vazio ('') para criar automaticamente na primeira execução
+  DRIVE_FOLDER_ID : '',
+  SHEET_ID        : '',
+
   TIMEZONE        : 'America/Manaus',
 
   // tipo (vindo do frontend) → nome da subpasta no Drive
@@ -85,27 +92,75 @@ function resposta(dados) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// RECURSOS — cria automaticamente se não existirem
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Obtém a planilha de auditoria.
+ * Ordem de prioridade: CFG.SHEET_ID → Script Properties → criar nova.
+ */
+function obterOuCriarPlanilha() {
+  const props = PropertiesService.getScriptProperties();
+
+  // 1. Tenta ID fixo no CFG
+  if (CFG.SHEET_ID) {
+    try { return SpreadsheetApp.openById(CFG.SHEET_ID); } catch(_) {}
+  }
+
+  // 2. Tenta ID salvo de execução anterior
+  const savedId = props.getProperty('LAADV_SHEET_ID');
+  if (savedId) {
+    try { return SpreadsheetApp.openById(savedId); } catch(_) {}
+  }
+
+  // 3. Cria nova planilha
+  const ss = SpreadsheetApp.create('LAADV — Auditoria de Documentos');
+  props.setProperty('LAADV_SHEET_ID', ss.getId());
+  Logger.log('✅ PLANILHA CRIADA AUTOMATICAMENTE');
+  Logger.log('   ID: ' + ss.getId());
+  Logger.log('   Link: https://docs.google.com/spreadsheets/d/' + ss.getId());
+  return ss;
+}
+
+/**
+ * Obtém a pasta raiz no Drive.
+ * Ordem de prioridade: CFG.DRIVE_FOLDER_ID → Script Properties → criar nova.
+ */
+function obterOuCriarPastaRaiz() {
+  const props = PropertiesService.getScriptProperties();
+
+  // 1. Tenta ID fixo no CFG
+  if (CFG.DRIVE_FOLDER_ID) {
+    try { return DriveApp.getFolderById(CFG.DRIVE_FOLDER_ID); } catch(_) {}
+  }
+
+  // 2. Tenta ID salvo de execução anterior
+  const savedFolderId = props.getProperty('LAADV_FOLDER_ID');
+  if (savedFolderId) {
+    try { return DriveApp.getFolderById(savedFolderId); } catch(_) {}
+  }
+
+  // 3. Cria pasta na raiz do Drive
+  const folder = DriveApp.createFolder('LAADV — Documentos Gerados');
+  props.setProperty('LAADV_FOLDER_ID', folder.getId());
+  Logger.log('✅ PASTA CRIADA AUTOMATICAMENTE');
+  Logger.log('   ID: ' + folder.getId());
+  Logger.log('   Link: https://drive.google.com/drive/folders/' + folder.getId());
+  return folder;
+}
+
+// ══════════════════════════════════════════════════════════════
 // PROCESSAMENTO
 // ══════════════════════════════════════════════════════════════
 
 function processarDocumento(payload) {
-  // payload esperado:
-  // {
-  //   tipo: 'peticao_pdf' | 'peticao_rtf' | 'relatorio' | 'memoria_calculo',
-  //   nome: 'LAADV_Cumprimento_...pdf',
-  //   conteudo_base64: '<base64>',   // opcional — sem conteúdo = só log
-  //   mime: 'application/pdf',
-  //   metadata: { escritorio, tipo_peca, cliente, cpf, processo, banco,
-  //               valor_causa, tipo_calculo, valor_original, valor_corrigido,
-  //               indice, data_inicio, data_fim, obs }
-  // }
-
   const { tipo, nome, conteudo_base64, mime, metadata = {} } = payload;
   let fileUrl = '';
 
   // 1. Upload do arquivo no Drive (se houver conteúdo)
   if (conteudo_base64) {
-    const pasta = obterOuCriarSubpasta(CFG.PASTA_POR_TIPO[tipo] || 'Outros');
+    const pastaRaiz = obterOuCriarPastaRaiz();
+    const pasta = obterOuCriarSubpasta(pastaRaiz, CFG.PASTA_POR_TIPO[tipo] || 'Outros');
     const bytes  = Utilities.base64Decode(conteudo_base64);
     const blob   = Utilities.newBlob(bytes, mime || 'application/octet-stream', nome);
     const arquivo = pasta.createFile(blob);
@@ -123,10 +178,9 @@ function processarDocumento(payload) {
 // DRIVE
 // ══════════════════════════════════════════════════════════════
 
-function obterOuCriarSubpasta(nomePasta) {
-  const raiz     = DriveApp.getFolderById(CFG.DRIVE_FOLDER_ID);
-  const iterator = raiz.getFoldersByName(nomePasta);
-  return iterator.hasNext() ? iterator.next() : raiz.createFolder(nomePasta);
+function obterOuCriarSubpasta(pastaRaiz, nomePasta) {
+  const iterator = pastaRaiz.getFoldersByName(nomePasta);
+  return iterator.hasNext() ? iterator.next() : pastaRaiz.createFolder(nomePasta);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -134,21 +188,21 @@ function obterOuCriarSubpasta(nomePasta) {
 // ══════════════════════════════════════════════════════════════
 
 function registrarNaPlanilha(tipo, nome, fileUrl, metadata) {
-  const ss   = SpreadsheetApp.openById(CFG.SHEET_ID);
+  const ss    = obterOuCriarPlanilha();
   const agora = new Date();
   const data  = Utilities.formatDate(agora, CFG.TIMEZONE, 'dd/MM/yyyy');
   const hora  = Utilities.formatDate(agora, CFG.TIMEZONE, 'HH:mm:ss');
 
   // ID sequencial baseado no Log Geral
   const logGeral = ss.getSheetByName('Log Geral');
-  const seq      = logGeral.getLastRow(); // linha 1 = cabeçalho
+  const seq      = logGeral ? logGeral.getLastRow() : 1;
   const id       = 'LAADV-' + String(seq).padStart(4, '0');
 
   // ── Aba específica ───────────────────────────────────────────
   const nomeAba = CFG.ABA_POR_TIPO[tipo] || 'Log Geral';
   const aba     = ss.getSheetByName(nomeAba);
 
-  if (nomeAba === 'Petições') {
+  if (aba && nomeAba === 'Petições') {
     aba.appendRow([
       id, data, hora,
       metadata.escritorio   || '',
@@ -161,7 +215,7 @@ function registrarNaPlanilha(tipo, nome, fileUrl, metadata) {
       tipo === 'peticao_pdf' ? 'PDF' : 'RTF',
       fileUrl
     ]);
-  } else if (nomeAba === 'Relatórios') {
+  } else if (aba && nomeAba === 'Relatórios') {
     aba.appendRow([
       id, data, hora,
       metadata.cliente          || '',
@@ -174,7 +228,7 @@ function registrarNaPlanilha(tipo, nome, fileUrl, metadata) {
       metadata.data_fim         || '',
       fileUrl
     ]);
-  } else if (nomeAba === 'Memória de Cálculo') {
+  } else if (aba && nomeAba === 'Memória de Cálculo') {
     aba.appendRow([
       id, data, hora,
       metadata.cliente  || '',
@@ -186,14 +240,16 @@ function registrarNaPlanilha(tipo, nome, fileUrl, metadata) {
   }
 
   // ── Log Geral (sempre) ────────────────────────────────────────
-  logGeral.appendRow([
-    id, data, hora,
-    nomeAba,
-    metadata.escritorio || '',
-    tipo,
-    nome,
-    fileUrl
-  ]);
+  if (logGeral) {
+    logGeral.appendRow([
+      id, data, hora,
+      nomeAba,
+      metadata.escritorio || '',
+      tipo,
+      nome,
+      fileUrl
+    ]);
+  }
 
   return id;
 }
@@ -203,7 +259,7 @@ function registrarNaPlanilha(tipo, nome, fileUrl, metadata) {
 // ══════════════════════════════════════════════════════════════
 
 function garantirSetup() {
-  const ss = SpreadsheetApp.openById(CFG.SHEET_ID);
+  const ss = obterOuCriarPlanilha();
 
   for (const [nomeAba, headers] of Object.entries(CFG.HEADERS)) {
     let aba = ss.getSheetByName(nomeAba);
@@ -243,9 +299,19 @@ function garantirSetup() {
 
 /**
  * Execute esta função UMA VEZ manualmente (no editor do Apps Script)
- * para garantir que as abas estejam criadas antes do primeiro uso.
+ * para garantir que as abas e recursos estejam criados antes do primeiro uso.
+ * Após executar, veja o Log (Ctrl+Enter ou menu Executar → Registros de execução)
+ * para obter os links da planilha e da pasta criadas.
  */
 function setupManual() {
   garantirSetup();
-  Logger.log('Setup concluído. Abas criadas na planilha.');
+  const props = PropertiesService.getScriptProperties();
+  const sheetId  = props.getProperty('LAADV_SHEET_ID')  || CFG.SHEET_ID  || '(não definido)';
+  const folderId = props.getProperty('LAADV_FOLDER_ID') || CFG.DRIVE_FOLDER_ID || '(não definido)';
+  Logger.log('════════════════════════════════════');
+  Logger.log('LAADV Backend — Setup concluído');
+  Logger.log('════════════════════════════════════');
+  Logger.log('Planilha : https://docs.google.com/spreadsheets/d/' + sheetId);
+  Logger.log('Pasta    : https://drive.google.com/drive/folders/' + folderId);
+  Logger.log('════════════════════════════════════');
 }
