@@ -136,21 +136,40 @@ class INSSParser {
 //  Lê a primeira página e busca marcadores textuais do INSS
 // ══════════════════════════════════════════════════════════════════════
 async function detectarTipo(file) {
-  if(typeof pdfjsLib==='undefined') return 'BRADESCO';
+  if (typeof pdfjsLib === 'undefined') return 'BRADESCO';
   try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    const buf=await file.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    const pg=await pdf.getPage(1);
-    const ct=await pg.getTextContent();
-    const texto=ct.items.map(i=>i.str).join(' ').toUpperCase();
-    if(texto.includes('INSTITUTO NACIONAL DO SEGURO SOCIAL') ||
-       texto.includes('HISTORICO DE CREDITOS') ||
-       texto.includes('HISTÓRICO DE CRÉDITOS') ||
-       (texto.includes('COMPETENCIA') && texto.includes('NIT')) ||
-       texto.includes('NIT:')) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const pg = await pdf.getPage(1);
+    const ct = await pg.getTextContent();
+    const texto = ct.items.map(i => i.str).join(' ').toUpperCase();
+
+    // INSS — prioridade máxima
+    if (texto.includes('INSTITUTO NACIONAL DO SEGURO SOCIAL') ||
+        texto.includes('HISTORICO DE CREDITOS') ||
+        texto.includes('HISTÓRICO DE CRÉDITOS') ||
+        (texto.includes('COMPETENCIA') && texto.includes('NIT')) ||
+        texto.includes('NIT:')) {
       return 'INSS';
     }
+    // Itaú
+    if ((texto.includes('EXTRATO CONTA') || texto.includes('EXTRATO CONTA / LAN')) &&
+        (texto.includes('AGÊNCIA:') || texto.includes('AGENCIA:') || texto.includes('AGÊNCIA:'))) {
+      return 'ITAU';
+    }
+    // Banco do Brasil
+    if (texto.includes('EXTRATO DE CONTA CORRENTE') &&
+        (texto.includes('HISTÓRICO') || texto.includes('HISTORICO')) &&
+        texto.includes('LOTE')) {
+      return 'BB';
+    }
+    // Caixa Econômica Federal
+    if (texto.includes('CAIXA') &&
+        (texto.includes('INTERNET BANKING') || texto.includes('EXTRATO POR PER'))) {
+      return 'CAIXA';
+    }
+    // Bradesco (padrão)
     return 'BRADESCO';
   } catch(e) {
     return 'BRADESCO';

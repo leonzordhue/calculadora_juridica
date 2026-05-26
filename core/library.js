@@ -96,13 +96,14 @@ const LIBRARY = Object.freeze({
   }),
 
   KEYWORDS: Object.freeze({
-    RMC:     ['RMC','RESERVA DE MARGEM','CARTAO CONSIGNADO','CONSIG CART','CRED CONSIG CART','RES MARG CART'],
-    RCC:     ['RCC','RESERVA CARTAO','CART CONSIG','CONSIGNADO CARTAO','CARTAO CONSIG','CONSIG CARTAO','CONSIGNACAO CARTAO','RCC CARTAO','DEB CART CONSIG'],
-    BX_FINAN:['BX ANT.FINAN','BX.ANT.FINANC','BAIXA ANTECIPADA','REFINANCIAMENTO','REFI EMP'],
-    TARIFA:  ['TARIFA','ANUIDADE','CESTA','PACOTE SERV','EMIS EXTRATO','SAQUE TERM','SAQUE 24H','TAR MANUT'],
-    SEGURO:  ['SEGURO','PRESTAMISTA','SEGPREST','SEG PREST','SEG VIDA','SEG CAPIT'],
-    JUROS:   ['JUROS','MORA','IOF','ENC FINANC','ENCARGOS','JUROS CART'],
-    PARCELA: ['PARCELA','CREDITO PESSOAL','EMPRÉST','EMPR PESSOAL','CRED PESSOAL','CONSIG EMP']
+    RMC:           ['RMC','RESERVA DE MARGEM','CARTAO CONSIGNADO','CONSIG CART','CRED CONSIG CART','RES MARG CART'],
+    RCC:           ['RCC','RESERVA CARTAO','CART CONSIG','CONSIGNADO CARTAO','CARTAO CONSIG','CONSIG CARTAO','CONSIGNACAO CARTAO','RCC CARTAO','DEB CART CONSIG'],
+    BX_FINAN:      ['BX ANT.FINAN','BX.ANT.FINANC','BAIXA ANTECIPADA','REFINANCIAMENTO','REFI EMP'],
+    TARIFA:        ['TARIFA','ANUIDADE','CESTA','PACOTE SERV','EMIS EXTRATO','SAQUE TERM','SAQUE 24H','TAR MANUT','CESTA BASICA DE SERVICO','CESTA BASICA SERVICOS','CLUBE DE BENEFICIOS','CLUBE BENEFICIO'],
+    SEGURO:        ['SEGURO','PRESTAMISTA','SEGPREST','SEG PREST','SEG VIDA','SEG CAPIT','SEGURO CARTAO'],
+    JUROS:         ['JUROS','MORA','IOF','ENC FINANC','ENCARGOS','JUROS CART','JUROS SALDO DEVEDOR','COBRANCA DE JUROS','COBRANÇA DE JUROS','COBR JUROS'],
+    PARCELA:       ['PARCELA','CREDITO PESSOAL','EMPRÉST','EMPR PESSOAL','CRED PESSOAL','CONSIG EMP','CREDITO CONSIGNADO','PGTO INSS','ADIANT.DEPOSITANTE'],
+    CARTAO_CREDITO:['GASTOS CARTAO DE CREDITO','PAGTO CARTAO','PAGAMENTO CARTAO','DEB CARTAO','FATURA CARTAO','OUROCARD','CARTAO VISA','CARTAO ELO','FAT CARTAO']
   }),
 
   JURIDICO: Object.freeze({
@@ -122,14 +123,19 @@ const LIBRARY = Object.freeze({
 
   // Mapeamento de rubricas INSS → categoria (usados pelo INSSParser)
   INSS_CODES: Object.freeze({
+    '101':'OUTROS',   // Valor Total MR do Período (bruto/referência)
+    '137':'OUTROS',   // Adiantamento p/arredondamento do crédito
+    '201':'OUTROS',   // IRRF
+    '207':'OUTROS',   // IR 13° Salário
     '216':'PARCELA',  // Consignação Empréstimo Bancário
-    '217':'RMC',      // Empréstimo sobre a RMC ← principal alvo
+    '217':'RMC',      // Empréstimo sobre a RMC
     '218':'OUTROS',   // Varia por documento
     '221':'SEGURO',   // Seguro Prestamista
     '222':'SEGURO',   // Seguro de Vida
-    '268':'RCC',      // Consignação - Cartão ← principal alvo
-    '201':'OUTROS',   // IRRF
-    '207':'OUTROS'    // IR 13º Salário
+    '268':'RCC',      // Consignação Cartão (RCC)
+    '303':'OUTROS',   // Abatimento beneficiário maior 65 anos
+    '316':'OUTROS',   // Saldo devedor arredondamento
+    '322':'RMC'       // Reserva de Margem Consignável (RMC)
   })
 });
 

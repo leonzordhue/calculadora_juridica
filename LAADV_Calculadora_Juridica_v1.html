@@ -198,6 +198,9 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 <script src="core/petition-engine.js"></script>
 <script src="io/bradesco-parser.js"></script>
 <script src="io/inss-parser.js"></script>
+<script src="io/itau-parser.js"></script>
+<script src="io/bb-parser.js"></script>
+<script src="io/caixa-parser.js"></script>
 <script src="render/report-builder.js"></script>
 </head>
 <body>
@@ -1169,7 +1172,12 @@ async function carregarPDF(file) {
     const tipoPDF=await detectarTipo(file);
     kernel.registrarBuild('PARSE',`Tipo detectado: ${tipoPDF}`);
     msg.textContent=`Parser ${tipoPDF} iniciado...`;
-    const parser = tipoPDF==='INSS' ? new INSSParser() : new BradescoParser();
+    let parser;
+    if (tipoPDF==='INSS')         parser = new INSSParser();
+    else if (tipoPDF==='ITAU')    parser = new ItauParser();
+    else if (tipoPDF==='BB')      parser = new BBParser();
+    else if (tipoPDF==='CAIXA')   parser = new CaixaParser();
+    else                          parser = new BradescoParser();
     const txns=await parser.parse(file,(p,t)=>{
       msg.textContent=`[${tipoPDF}] Processando página ${p} de ${t}...`;
       fill.style.width=`${Math.round(p/t*100)}%`;
@@ -1519,7 +1527,7 @@ function alternarTema() {
   kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.8.0');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
-  kernel.registrarBuild('PARSER','BradescoParser + INSSParser · detectarTipo() automático');
+  kernel.registrarBuild('PARSER','BradescoParser + INSSParser + ItauParser + BBParser + CaixaParser · detectarTipo() automático');
   kernel.registrarBuild('LAW','Lei 14.905/24: split automático 30/08/2024 ativo · TJDFT/IPCA-E habilitados');
   kernel.registrarBuild('BACEN',`SGS ${LIBRARY.BACEN_SGS.INSS.sgsCodigo}(INSS) / ${LIBRARY.BACEN_SGS.PUBLICO.sgsCodigo}(Público) / ${LIBRARY.BACEN_SGS.PRIVADO.sgsCodigo}(Privado) · CORS habilitado`);
   kernel.registrarBuild('STATUS','Sistema operacional · Aguardando operação');
