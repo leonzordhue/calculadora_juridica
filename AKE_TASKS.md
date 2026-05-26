@@ -23,6 +23,7 @@
 | TASK-012 | UI Polish: Dark Mode + Header limpo + Abas | claude-work | done | ALTA |
 | TASK-013 | Classificação por Rubricas Jurídicas (27 códigos) | claude-work | done | ALTA |
 | TASK-014 | Deep Audit: Bug Hunt, Crash Prevention, Melhorias | claude-work | done | CRÍTICA |
+| TASK-015 | Integração Backend Google Apps Script — Drive + Sheets | claude-work | ready | ALTA |
 
 > TASK-011 depende de TASK-010 estar integrada em main (usa UIState.lastBatchResults).
 > TASK-008, 009, 010 podem ser executadas em qualquer ordem — arquivos não conflitam entre si.
@@ -433,6 +434,56 @@ Ver `PROMPT_CLAUDE_WORK_TASK_012.md`
 - [x] Renomeação concluída
 - [x] Abas reordenadas
 - [x] Integrado em main (v1.9.1)
+
+---
+
+## TASK-015 — Integração Backend Google Apps Script
+
+```
+status: ready
+agent: claude-work
+branch: claude/work-backend-015
+prioridade: ALTA
+arquivos_leitura:
+  - PROMPT_CLAUDE_WORK_TASK_015.md
+  - LAADV_Calculadora_Juridica_v1.html
+  - backend/laadv_backend.gs
+arquivos_saida:
+  - LAADV_Calculadora_Juridica_v1.html
+arquivos_proibidos:
+  - core/*, io/*, render/*, backend/*
+```
+
+### Objetivo
+Conectar a plataforma ao backend Google Apps Script para registrar automaticamente todos os
+documentos gerados (PDF petição, RTF petição, relatório, memória de cálculo) no Google Drive e
+na planilha de auditoria Google Sheets.
+
+### Contexto
+O backend `backend/laadv_backend.gs` já foi criado e deve ser implantado como Google Apps Script
+Web App pelo operador. O HTML precisa de:
+- Constante `LAADV_BACKEND_URL` (lida do localStorage)
+- Função `registrarDocumento()` async fire-and-forget
+- Card de configuração na aba Sistema com campo URL e botão "Testar Conexão"
+- Wrappers para todos os 5 botões de export
+
+### Critério de Aceite
+- [ ] `LAADV_BACKEND_URL` lida do localStorage ao carregar
+- [ ] `registrarDocumento()` async, fire-and-forget (não bloqueia se falhar)
+- [ ] Card "Backend de Auditoria" na aba Sistema com campo URL + botão Testar
+- [ ] URL salva no localStorage ao digitar
+- [ ] Botão "Testar Conexão" faz GET e exibe ✅/❌
+- [ ] 5 botões de export usam wrappers `*ComBackend()`
+- [ ] Sem erros no console quando backend não configurado
+- [ ] Sem regressão nos exports — downloads continuam funcionando
+
+### Status de Execução
+- [ ] Spec lida e analisada
+- [ ] Constante + funções base adicionadas ao HTML
+- [ ] Card de configuração inserido na aba Sistema
+- [ ] Wrappers de export criados
+- [ ] onclick dos botões atualizados
+- [ ] PR aberto contra main
 
 ---
 
