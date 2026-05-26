@@ -3,38 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.9.0</title>
+<title>LAADV — Calculadora Jurídica v1.9.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-:root{--teal:#0B4A44;--teal-mid:#145E58;--teal-light:#1A7A72;--gold:#C9A93E;--gold-light:#E8C96A;--gray-bg:#F5F7F9;--white:#fff;--text:#1A2B2A;--muted:#6B7B7A;--border:#D1DBD9;--danger:#C0392B;--success:#27AE60;--warn:#E67E22;--bg-principal:#0D1B2A;--bg-card:#050D1A;--bg-card2:#0A1628;--bg-input:#0A1628;--txt-principal:#C0D0D0;--txt-detalhe:#8BC4C4;--txt-label:#8BC4C4;--border-card:#1A3A5C;--border-input:#1A3A5C}
-[data-tema="claro"]{--bg-principal:#F4F6F9;--bg-card:#FFFFFF;--bg-card2:#EEF2F7;--bg-input:#FFFFFF;--txt-principal:#1A2B3C;--txt-detalhe:#3A5A7A;--txt-label:#3A5A7A;--border-card:#CDD6DF;--border-input:#CDD6DF}
+:root{--teal:#0B4A44;--teal-mid:#145E58;--teal-light:#1A7A72;--gold:#C9A93E;--gold-light:#E8C96A;--danger:#C0392B;--success:#27AE60;--warn:#E67E22;--bg-principal:#F5F7F9;--bg-card:#FFFFFF;--bg-card2:#EEF2F7;--bg-input:#FFFFFF;--txt-principal:#1A2B2A;--txt-detalhe:#6B7B7A;--txt-label:#6B7B7A;--border-card:#D1DBD9;--border-input:#D1DBD9;--sombra:rgba(0,0,0,.07);--gray-bg:var(--bg-principal);--white:var(--bg-card);--text:var(--txt-principal);--muted:var(--txt-detalhe);--border:var(--border-card)}
+[data-tema="escuro"]{--bg-principal:#0D1B2A;--bg-card:#0A1420;--bg-card2:#0A1628;--bg-input:#0A1628;--txt-principal:#C0D0D0;--txt-detalhe:#8BC4C4;--txt-label:#8BC4C4;--border-card:#1A3A5C;--border-input:#1A3A5C;--sombra:rgba(0,0,0,.3);--gray-bg:var(--bg-principal);--white:var(--bg-card);--text:var(--txt-principal);--muted:var(--txt-detalhe);--border:var(--border-card)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--gray-bg);color:var(--text);line-height:1.6;min-height:100vh}
+body{font-family:'DM Sans',sans-serif;background:var(--bg-principal);color:var(--txt-principal);line-height:1.6;min-height:100vh}
 h1,h2,h3,h4{font-family:'Cormorant Garamond',serif}
 .header{background:var(--teal);color:#fff;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 16px rgba(0,0,0,.25)}
 .hd-title{font-size:22px;font-weight:700;letter-spacing:.3px}
 .hd-sub{font-size:10px;opacity:.65;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
 .hd-right{display:flex;align-items:center;gap:12px}
-.ake-badge{background:var(--gold);color:var(--teal);padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.8px}
-.q-chip{font-size:11px;opacity:.8;font-family:'Courier New',monospace}
-.tabs-nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.tab-btn{padding:13px 18px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
+.tabs-nav{background:var(--bg-card);border-bottom:2px solid var(--border-card);display:flex;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px var(--sombra)}
+.tab-btn{padding:13px 18px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--txt-detalhe);letter-spacing:.6px;text-transform:uppercase;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
 .tab-btn:hover{color:var(--teal)}
 .tab-btn.active{color:var(--teal);border-bottom-color:var(--gold);font-weight:700}
 .tab-pane{display:none;padding:28px 32px;max-width:1200px;margin:0 auto}
 .tab-pane.active{display:block}
-.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 6px rgba(0,0,0,.07);margin-bottom:20px}
+.card{background:var(--bg-card);border-radius:12px;padding:24px;box-shadow:0 1px 6px var(--sombra);margin-bottom:20px}
 .card-title{font-size:19px;color:var(--teal);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .form-row{display:grid;gap:14px;margin-bottom:14px}
 .cols-2{grid-template-columns:1fr 1fr}
 .cols-3{grid-template-columns:1fr 1fr 1fr}
 .cols-4{grid-template-columns:1fr 1fr 1fr 1fr}
-label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
-input[type=text],input[type=number],input[type=date],input[type=month],select,textarea{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#fff;transition:border-color .2s}
+label{display:block;font-size:11px;font-weight:600;color:var(--txt-label);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
+input[type=text],input[type=number],input[type=date],input[type=month],select,textarea{width:100%;padding:9px 13px;border:1.5px solid var(--border-input);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt-principal);background:var(--bg-input);transition:border-color .2s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal)}
 input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)}
 .btn{padding:9px 18px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.4px;white-space:nowrap}
@@ -207,20 +205,17 @@ details[open] #trace-arrow{transform:rotate(90deg)}
 
 <div class="header">
   <div>
-    <div class="hd-title">LAADV — Plataforma Axiomática</div>
-    <div class="hd-sub">Cálculo Jurídico-Financeiro · AKE/UFT-1.0 · v1.9.0</div>
+    <div class="hd-title">LAADV — Calculadora Jurídica</div>
+    <div class="hd-sub">Cálculo Consignado · RMC/RCC · v1.9.0</div>
   </div>
   <div class="hd-right">
-    <span class="q-chip" id="header-q">Q=—</span>
-    <span class="q-chip" id="header-ic">IC=—</span>
     <button id="btn-tema" onclick="alternarTema()"
       title="Alternar modo claro/escuro"
       style="background:transparent;border:1px solid rgba(255,255,255,.35);border-radius:20px;
              padding:4px 12px;color:rgba(255,255,255,.8);cursor:pointer;font-size:12px;
              font-family:inherit;transition:all .2s">
-      ☀ Claro
+      🌙 Escuro
     </button>
-    <span class="ake-badge">AKE/UFT-1.0</span>
   </div>
 </div>
 
@@ -229,8 +224,8 @@ details[open] #trace-arrow{transform:rotate(90deg)}
   <button class="tab-btn" onclick="switchTab('calcular',this)">⚙ Calcular</button>
   <button class="tab-btn" onclick="switchTab('comparativo',this)">⚖ Comparativo</button>
   <button class="tab-btn" onclick="switchTab('relatorio',this)">📄 Relatório</button>
-  <button class="tab-btn" onclick="switchTab('kernel',this)">📊 Sistema</button>
   <button class="tab-btn" onclick="switchTab('pecas',this)">📜 Peças</button>
+  <button class="tab-btn" onclick="switchTab('kernel',this)">📊 Sistema</button>
 </div>
 
 <!-- ═══ TAB EXTRATOS ═══ -->
@@ -1564,15 +1559,15 @@ const PerfilStorage=(function(){
 function alternarTema() {
   const body = document.body;
   const btn = document.getElementById('btn-tema');
-  const temaAtual = body.getAttribute('data-tema');
-  if (temaAtual === 'claro') {
+  const escuro = body.getAttribute('data-tema') === 'escuro';
+  if (escuro) {
     body.removeAttribute('data-tema');
-    btn.textContent = '☀ Claro';
-    try { localStorage.setItem('laadv_tema', 'escuro'); } catch(e) {}
-  } else {
-    body.setAttribute('data-tema', 'claro');
-    btn.textContent = '🌙 Escuro';
+    if (btn) btn.textContent = '🌙 Escuro';
     try { localStorage.setItem('laadv_tema', 'claro'); } catch(e) {}
+  } else {
+    body.setAttribute('data-tema', 'escuro');
+    if (btn) btn.textContent = '☀ Claro';
+    try { localStorage.setItem('laadv_tema', 'escuro'); } catch(e) {}
   }
 }
 
@@ -1704,10 +1699,10 @@ function importarEntradaManual() {
 (function() {
   try {
     const t = localStorage.getItem('laadv_tema');
-    if (t === 'claro') {
-      document.body.setAttribute('data-tema', 'claro');
+    if (t === 'escuro') {
+      document.body.setAttribute('data-tema', 'escuro');
       const btn = document.getElementById('btn-tema');
-      if (btn) btn.textContent = '🌙 Escuro';
+      if (btn) btn.textContent = '☀ Claro';
     }
   } catch(e) {}
 })();
@@ -1719,7 +1714,7 @@ function importarEntradaManual() {
   document.getElementById('pet-data-assina').value=hoje;
   if(!PerfilStorage.carregar()) selecionarEscritorio('LAADV');
   PerfilStorage.iniciarListeners();
-  kernel.registrarBuild('BOOT','LAADV Plataforma Axiomática de Cálculo Jurídico-Financeiro v1.9.0');
+  kernel.registrarBuild('BOOT','LAADV Calculadora Jurídica v1.9.0');
   kernel.registrarBuild('BOOT','AKE/UFT-1.0 · FETCH→DECODE→EXECUTE→WRITEBACK · IC≥0.9');
   kernel.registrarBuild('LIBRARY',`${Object.keys(LIBRARY.INDICES.IPCA).length} meses carregados · IPCA/INPC/IGP-M/SELIC · TJDFT/TJRJ/TJAM=INPC`);
   kernel.registrarBuild('PARSER','BradescoParser + INSSParser + ItauParser + BBParser + CaixaParser · detectarTipo() automático');
