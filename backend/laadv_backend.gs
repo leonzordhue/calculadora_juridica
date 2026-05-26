@@ -304,7 +304,9 @@ function garantirSetup() {
  * para obter os links da planilha e da pasta criadas.
  */
 function setupManual() {
-  garantirSetup();
+  garantirSetup();           // cria/configura abas da planilha
+  obterOuCriarPastaRaiz();   // garante que a pasta Drive também seja criada agora
+
   const props = PropertiesService.getScriptProperties();
   const sheetId  = props.getProperty('LAADV_SHEET_ID')  || CFG.SHEET_ID  || '(não definido)';
   const folderId = props.getProperty('LAADV_FOLDER_ID') || CFG.DRIVE_FOLDER_ID || '(não definido)';
