@@ -23,8 +23,8 @@
 // ══════════════════════════════════════════════════════════════
 const CFG = {
   // Deixe vazio ('') para criar automaticamente na primeira execução
-  DRIVE_FOLDER_ID : '',
-  SHEET_ID        : '',
+  DRIVE_FOLDER_ID : '1NOHm9hZ3turjxLPhRsD9TQxEoA0Ouvh7',
+  SHEET_ID        : '1xGUfo3WafUYsGzSZ3ZEg-WThVlyGXb7VjoAyAND4ZYc',
 
   TIMEZONE        : 'America/Manaus',
 
