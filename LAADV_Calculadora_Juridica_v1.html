@@ -132,11 +132,12 @@ input[type=checkbox]{width:auto;margin:0;cursor:pointer;accent-color:var(--teal)
 details summary::-webkit-details-marker{display:none}
 details summary::marker{display:none}
 /* ── PEÇAS PROCESSUAIS ── */
-.escritorio-selector{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.escritorio-selector{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
 .escritorio-card{border:2.5px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;position:relative}
 .escritorio-card:hover{border-color:var(--teal);transform:translateY(-2px)}
 .escritorio-card.selected-laadv{border-color:#0B4A44;background:rgba(11,74,68,.05)}
 .escritorio-card.selected-ng{border-color:#1565C0;background:rgba(21,101,192,.05)}
+.escritorio-card.selected-laadv_am{border-color:#0B4A44;background:rgba(11,74,68,.05)}
 .escritorio-card input[type=radio]{position:absolute;top:14px;right:14px;width:18px;height:18px;accent-color:var(--teal)}
 .esc-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;margin-bottom:4px}
 .esc-logo-laadv{color:#0B4A44}
@@ -797,6 +798,17 @@ details[open] #trace-arrow{transform:rotate(90deg)}
             (21) 99828-2924 · Rio de Janeiro/RJ
           </div>
         </label>
+        <label class="escritorio-card" id="card-laadv_am" onclick="selecionarEscritorio('LAADV_AM')">
+          <input type="radio" name="pet-escritorio" id="esc-laadv_am" value="LAADV_AM">
+          <div class="esc-logo esc-logo-laadv">LAADV/AM</div>
+          <div style="font-size:13px;font-weight:600;color:var(--teal);margin-bottom:6px">Luis Albert — Manaus/AM</div>
+          <div class="esc-info">
+            Luis Albert dos Santos Oliveira<br>
+            OAB/AM nº 8.251<br>
+            contato@luisalbertadv.com.br<br>
+            (92) 99000-0000 · Manaus/AM
+          </div>
+        </label>
         <label class="escritorio-card" id="card-ng" onclick="selecionarEscritorio('NG')">
           <input type="radio" name="pet-escritorio" id="esc-ng" value="NG">
           <div class="esc-logo esc-logo-ng">NG</div>
@@ -1324,6 +1336,7 @@ function selecionarEscritorio(id){
   const esc=ESCRITORIOS[id];
   document.getElementById('esc-'+id.toLowerCase()).checked=true;
   document.getElementById('card-laadv').className='escritorio-card'+(id==='LAADV'?' selected-laadv':'');
+  document.getElementById('card-laadv_am').className='escritorio-card'+(id==='LAADV_AM'?' selected-laadv_am':'');
   document.getElementById('card-ng').className='escritorio-card'+(id==='NG'?' selected-ng':'');
   document.getElementById('pet-adv-nome').value=esc.adv_nome;
   document.getElementById('pet-adv-oab').value=esc.adv_oab;
