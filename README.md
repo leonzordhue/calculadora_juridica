@@ -1,79 +1,73 @@
-# LAADV — Plataforma Axiomática de Cálculo Jurídico-Financeiro
+# LAADV — Calculadora Jurídica v1.9.4
 
-> **AKE/UFT-1.0** · v1.0 · Luís Albert Advocacia
+> **AKE/UFT-1.0** · Luís Albert Advocacia
 
-Sistema operacional jurídico-financeiro HTML para identificação de cobranças bancárias indevidas, geração de laudos periciais e memórias de cálculo para ações judiciais.
-
----
-
-## 🔗 Acesso Online (GitHub Pages)
-
-**[▶ Abrir Plataforma](https://leonzordhue.github.io/calculadora_juridica/)**
+Plataforma jurídico-financeira HTML para identificação de cobranças bancárias indevidas, geração de memórias de cálculo, laudos e peças processuais para ações judiciais.
 
 ---
 
-## 📋 Funcionalidades
+## Acesso Online (GitHub Pages)
 
-| Módulo | Descrição |
-|--------|-----------|
-| **📂 Extratos** | Parser PDF Bradesco com coordenadas X/Y, classificação axiomática, confidence scoring |
-| **⚙ Calcular** | Pipeline LegalCPU: FETCH→DECODE→EXECUTE→WRITEBACK com trace completo |
-| **⚖ Comparativo** | Adversário vs. LAADV — identificação de excesso cobrado, histórico |
-| **📄 Relatório** | Memória de cálculo completa, export PDF e XLSX |
-| **⚛ Kernel** | Métricas AKE (Q, IC, H, τ), inspetor de índices, build log append-only |
+**https://leonzordhue.github.io/calculadora_juridica/**
 
 ---
 
-## 🧮 Motor de Cálculo
+## Funcionalidades
 
-- **Lei 14.905/2024** — split automático em 30/08/2024:
-  - Pré-split: INPC + 1% a.m. (Art. 406 CC)
-  - Pós-split: IPCA + SELIC
-- **Repetição em dobro** — Art. 42, §único, CDC (RMC/RCC)
-- **Pró-rata diária** para meses parciais
-- **Índices embarcados** (2018–2025): IPCA, INPC, IGP-M, SELIC
-
----
-
-## 🏛 Arquitetura
-
-```
-Harvard Architecture (AKE/UFT-1.0)
-├── LIBRARY (Object.freeze) — ROM: índices econômicos, keywords, constantes jurídicas
-├── AKEKernel              — Q(n) = IC×[Ac/At]×e^(−H)×[1−B/At]
-├── LegalCPU               — FETCH→DECODE→EXECUTE→WRITEBACK
-├── FinancialEngine         — ALU: funções puras de cálculo financeiro
-├── BradescoParser          — PDF.js 3.11.174 com classificação axiomática
-└── ReportBuilder           — jsPDF + SheetJS
-```
+- Upload e análise de extratos PDF (Bradesco, Itaú, BB, Caixa, INSS)
+- Classificação automática de transações por 27 rubricas jurídicas
+- Cálculo de indébito consignado com taxa média BACEN (SGS)
+- Correção monetária: IPCA, INPC, IGP-M, SELIC, IPCA-E
+- Cálculo em lote (batch) com totalizador RMC/RCC
+- Gerador de peças processuais: Cumprimento de Sentença, Petição Inicial, Impugnação
+- Export PDF (jsPDF) e RTF nativos
+- Memória de cálculo em PDF com sistema de apuração formal
+- Relatório de cálculo individual com comparativo Price/BACEN
+- Dark mode com persistência
+- Três escritórios configurados: LAADV (RJ), NG (AM), LAADV/AM
+- Backend de auditoria: registro automático no Google Drive e Google Sheets
 
 ---
 
-## ⚙ Stack Técnica
+## Arquitetura (Harvard Emulation — AKE/UFT-1.0)
 
-- HTML5 + CSS3 + Vanilla JS (arquivo único, sem build, sem backend)
-- [PDF.js 3.11.174](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js)
-- [SheetJS 0.20.2](https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js)
-- [jsPDF 2.5.1](https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js) + AutoTable 3.8.2
-
----
-
-## 📌 Cobranças Identificáveis
-
-- **RMC/RCC** — Reserva de Margem para Cartão / Consignado
-- **BX ANT.FINAN** — Refinanciamento / Baixa Antecipada
-- **Tarifas indevidas** — cestas, pacotes, saques, emissão de extrato
-- **Juros/Mora/IOF** — encargos abusivos
-- **Seguros forçados** — prestamista, vida, capitalização (venda casada)
-- **Parcelas de empréstimos** — crédito pessoal indevido
+| Módulo | Arquivo | Papel |
+|--------|---------|-------|
+| ROM / Firmware | `core/library.js` | LIBRARY: índices, rubricas, constantes (Object.freeze) |
+| ALU / FPU | `core/financial-alu.js` | FinancialEngine: cálculos puros sem efeitos de UI |
+| CPU | `core/legal-cpu.js` | LegalCPU: pipeline FETCH→DECODE→EXECUTE→WRITEBACK |
+| Kernel | `core/ake-kernel.js` | AKEKernel: supervisor IC, build log, métricas |
+| GPU / Renderer | `core/petition-engine.js` + `render/report-builder.js` | Petições, PDFs, RTF |
+| I/O | `io/bradesco-parser.js` + demais parsers | Parsers de extrato PDF por banco |
+| Backend | `backend/laadv_backend.gs` | Google Apps Script: Drive + Sheets audit log |
 
 ---
 
-## 👤 Autoria
+## Axiomas do Sistema
 
-**Paulo Esteves Fernandes Neto** — DMOB/SEINFRA  
-Metodologia: AKE/UFT-1.0 (Axiomatic Kernel Engine / Unified Field Theory)
+- **A1** — `LIBRARY` e `ESCRITORIOS` são `Object.freeze()` — imutáveis em runtime
+- **A2** — IC >= 0.9 obrigatório — `assertIC()` bloqueia WRITEBACK abaixo do limiar
+- **A3** — Toda operação gera entrada no `AKEKernel` build log
+- **A4** — Taxa média sempre referenciada ao SGS BACEN — nunca inferida
+- **A5** — `FinancialEngine` é puro (sem efeitos colaterais de UI)
+- **A6** — `AKE_WORKLOG.md` é append-only — nunca perde entradas
 
 ---
 
-*LAADV Plataforma Axiomática v1.0 · 2026*
+## Testes
+
+Abrir `tests/sanity.html` no browser para executar a suite de sanidade (29 assertions).
+
+---
+
+## Protocolo Multi-Agente
+
+| Agente | Papel |
+|--------|-------|
+| **Principal** (Sonnet) | Coordenação, integração, git, deploy |
+| **Claude-Work** (Opus 4.7) | Execução de tasks — toca apenas `LAADV_Calculadora_Juridica_v1.html` |
+| **Codex** | Módulos `core/`, `io/`, `render/` |
+
+---
+
+*AKE/UFT-1.0 | BUILD: LAADV-20260526 | IC: 1.0*

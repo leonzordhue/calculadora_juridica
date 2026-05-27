@@ -24,6 +24,8 @@
 | TASK-013 | Classificação por Rubricas Jurídicas (27 códigos) | claude-work | done | ALTA |
 | TASK-014 | Deep Audit: Bug Hunt, Crash Prevention, Melhorias | claude-work | done | CRÍTICA |
 | TASK-015 | Integração Backend Google Apps Script — Drive + Sheets | claude-work | done | ALTA |
+| TASK-016 | Auditoria Final: remoção de código morto e limpeza | claude-work | ready | MEDIA |
+| TASK-015 | Integração Backend Google Apps Script — Drive + Sheets | claude-work | done | ALTA |
 
 > TASK-011 depende de TASK-010 estar integrada em main (usa UIState.lastBatchResults).
 > TASK-008, 009, 010 podem ser executadas em qualquer ordem — arquivos não conflitam entre si.
