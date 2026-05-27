@@ -1401,8 +1401,6 @@ function updateKernelMetrics(){
   ice.className='metric-val '+(ic>=0.9?'g':ic>=0.6?'w':'b');
   qe.className='metric-val '+(Q>=0.7?'g':Q>=0.4?'w':'b');
   he.className='metric-val '+(H<1?'g':H<2?'w':'b');
-  document.getElementById('header-q').textContent=`Q=${Q.toFixed(3)}`;
-  document.getElementById('header-ic').textContent=`IC=${ic.toFixed(2)}`;
 }
 
 function renderBuildLog(){
@@ -1652,7 +1650,7 @@ function exportarPeticaoRTFComBackend() {
   try {
     const d = PetitionEngine.DECODE();
     if (!d) return;
-    const escritorioId = document.getElementById('pet-escritorio')?.value || d.escritorioId || '';
+    const escritorioId = document.querySelector('input[name="pet-escritorio"]:checked')?.value || d.escritorioId || '';
     registrarDocumento('peticao_rtf',
       `LAADV_Peticao_${(d.autor||'cliente').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.rtf`,
       null,
